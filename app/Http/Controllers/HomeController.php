@@ -19,6 +19,6 @@ class HomeController extends Controller
         // Obtener películas populares para mostrar en la página de inicio
         $popularMovies = $this->tmdbService->getPopularMovies();
         
-        return view('home', compact('popularMovies'));
+        return view('welcome');
     }
 }
