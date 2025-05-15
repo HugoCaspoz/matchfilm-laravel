@@ -60,7 +60,7 @@
                     <img src="https://image.tmdb.org/t/p/w500{{ $movie['poster_path'] }}" class="card-img-top" alt="{{ $movie['title'] }}">
                 @else
                     <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 300px;">
-                        <span class="text-white">Sin imagen</span>
+                        <span class="text-white">Sin imagenes</span>
                     </div>
                 @endif
                 <div class="card-body">
