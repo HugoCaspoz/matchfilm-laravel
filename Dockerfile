@@ -18,8 +18,13 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Configurar directorio de trabajo
 WORKDIR /app
 
-# Copiar solo los archivos esenciales
+# Copiar archivos de Composer
 COPY composer.json composer.lock ./
+
+# 🔧 Instalar dependencias
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader
+
+# Copiar el resto del proyecto
 COPY app ./app
 COPY bootstrap ./bootstrap
 COPY config ./config
