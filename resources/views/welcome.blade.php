@@ -1,48 +1,300 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MatchFilm - Encuentra películas que ver con tus amigos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('css/landing.css') }}">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="{{ route('home') }}">
+                <i class="fas fa-film me-2"></i>MatchFilm
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#como-funciona">Cómo funciona</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#caracteristicas">Características</a>
+                    </li>
+                    @guest
+                        <li class="nav-item">
+                            <a class="nav-link btn-login" href="{{ route('login') }}">Iniciar Sesión</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link btn-register" href="{{ route('register') }}">Registrarse</a>
+                        </li>
+                    @else
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('movies.index') }}">Películas</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('matches.index') }}">Matches</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                                {{ Auth::user()->username ?? Auth::user()->name }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{{ route('profile.show') }}">Mi Perfil</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="POST" action="{{ route('logout') }}">
+                                        @csrf
+                                        <button type="submit" class="dropdown-item">Cerrar Sesión</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                    @endguest
+                </ul>
+            </div>
+        </div>
+    </nav>
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
-
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,600&display=swap" rel="stylesheet" />
-
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    </head>
-    <body class="antialiased">
-        <div class="relative sm:flex sm:justify-center sm:items-center min-h-screen bg-dots-darker bg-center bg-gray-100 dark:bg-dots-lighter dark:bg-gray-900 selection:bg-red-500 selection:text-white">
-            <div class="max-w-7xl mx-auto p-6 lg:p-8">
-                <div class="flex justify-center">
-                    <svg viewBox="0 0 62 65" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-16 w-auto bg-gray-100 dark:bg-gray-900">
-                        <path d="M61.8548 14.6253C61.8778 14.7102 61.8895 14.7978 61.8897 14.8858V28.5615C61.8898 28.737 61.8434 28.9095 61.7554 29.0614C61.6675 29.2132 61.5409 29.3392 61.3887 29.4265L49.9104 36.0351V49.1337C49.9104 49.4902 49.7209 49.8192 49.4118 49.9987L25.4519 63.7916C25.3971 63.8227 25.3372 63.8427 25.2774 63.8639C25.255 63.8714 25.2338 63.8851 25.2101 63.8913C25.0426 63.9354 24.8666 63.9354 24.6991 63.8913C24.6716 63.8838 24.6467 63.8689 24.6205 63.8589C24.5657 63.8389 24.5084 63.8215 24.456 63.7916L0.501061 49.9987C0.348882 49.9113 0.222437 49.7853 0.134469 49.6334C0.0465019 49.4816 0.000120578 49.3092 0 49.1337L0 8.10652C0 8.01678 0.0124642 7.92953 0.0348998 7.84477C0.0423783 7.8161 0.0598282 7.78993 0.0697995 7.76126C0.0884958 7.70891 0.105946 7.65531 0.133367 7.6067C0.152063 7.5743 0.179485 7.54812 0.20192 7.51821C0.230588 7.47832 0.256763 7.43719 0.290416 7.40229C0.319084 7.37362 0.356476 7.35243 0.388883 7.32751C0.425029 7.29759 0.457436 7.26518 0.498568 7.2415L12.4779 0.345059C12.6296 0.257786 12.8015 0.211853 12.9765 0.211853C13.1515 0.211853 13.3234 0.257786 13.475 0.345059L25.4531 7.2415H25.4556C25.4955 7.26643 25.5292 7.29759 25.5653 7.32626C25.5977 7.35119 25.6339 7.37362 25.6625 7.40104C25.6974 7.43719 25.7224 7.47832 25.7523 7.51821C25.7735 7.54812 25.8021 7.5743 25.8196 7.6067C25.8483 7.65656 25.8645 7.70891 25.8844 7.76126C25.8944 7.78993 25.9118 7.8161 25.9193 7.84602C25.9423 7.93096 25.954 8.01853 25.9542 8.10652V33.7317L35.9355 27.9844V14.8846C35.9355 14.7973 35.948 14.7088 35.9704 14.6253C35.9792 14.5954 35.9954 14.5692 36.0053 14.5405C36.0253 14.4882 36.0427 14.4346 36.0702 14.386C36.0888 14.3536 36.1163 14.3274 36.1375 14.2975C36.1674 14.2576 36.1923 14.2165 36.2272 14.1816C36.2559 14.1529 36.292 14.1317 36.3244 14.1068C36.3618 14.0769 36.3942 14.0445 36.4341 14.0208L48.4147 7.12434C48.5663 7.03694 48.7383 6.99094 48.9133 6.99094C49.0883 6.99094 49.2602 7.03694 49.4118 7.12434L61.3899 14.0208C61.4323 14.0457 61.4647 14.0769 61.5021 14.1055C61.5333 14.1305 61.5694 14.1529 61.5981 14.1803C61.633 14.2165 61.6579 14.2576 61.6878 14.2975C61.7103 14.3274 61.7377 14.3536 61.7551 14.386C61.7838 14.4346 61.8 14.4882 61.8199 14.5405C61.8312 14.5692 61.8474 14.5954 61.8548 14.6253Z" fill="currentColor"></path>
-                    </svg>
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 hero-text">
+                    <h1 class="display-4 fw-bold">Encuentra la película perfecta para ver juntos</h1>
+                    <p class="lead mb-4">MatchFilm conecta tus gustos cinematográficos con los de tus amigos para descubrir qué películas ver juntos. ¡Nunca más discutas sobre qué película elegir!</p>
+                    <div class="hero-buttons">
+                        @guest
+                            <a href="{{ route('register') }}" class="btn btn-primary btn-lg">Comenzar ahora</a>
+                            <a href="#como-funciona" class="btn btn-outline-light btn-lg ms-3">Cómo funciona</a>
+                        @else
+                            <a href="{{ route('movies.index') }}" class="btn btn-primary btn-lg">Explorar películas</a>
+                            <a href="{{ route('matches.index') }}" class="btn btn-outline-light btn-lg ms-3">Ver mis matches</a>
+                        @endguest
+                    </div>
                 </div>
+                <div class="col-lg-6 hero-image">
+                    <img src="https://source.unsplash.com/random/600x500/?friends,movies" alt="Amigos viendo películas" class="img-fluid">
+                </div>
+            </div>
+        </div>
+        <div class="hero-wave">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
+                <path fill="#ffffff" fill-opacity="1" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,149.3C960,160,1056,160,1152,138.7C1248,117,1344,75,1392,53.3L1440,32L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+            </svg>
+        </div>
+    </section>
 
-                <div class="mt-16">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-                        <a href="{{ route('login') }}" class="scale-100 p-6 bg-white dark:bg-gray-800/50 dark:bg-gradient-to-bl from-gray-700/50 via-transparent dark:ring-1 dark:ring-inset dark:ring-white/5 rounded-lg shadow-2xl shadow-gray-500/20 dark:shadow-none flex motion-safe:hover:scale-[1.01] transition-all duration-250 focus:outline focus:outline-2 focus:outline-red-500">
-                            <div>
-                                <h2 class="mt-6 text-xl font-semibold text-gray-900 dark:text-white">Login</h2>
-                                <p class="mt-4 text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
-                                    Inicia sesión en tu cuenta para acceder a todas las funciones.
-                                </p>
-                            </div>
-                        </a>
-
-                        <a href="{{ route('register') }}" class="scale-100 p-6 bg-white dark:bg-gray-800/50 dark:bg-gradient-to-bl from-gray-700/50 via-transparent dark:ring-1 dark:ring-inset dark:ring-white/5 rounded-lg shadow-2xl shadow-gray-500/20 dark:shadow-none flex motion-safe:hover:scale-[1.01] transition-all duration-250 focus:outline focus:outline-2 focus:outline-red-500">
-                            <div>
-                                <h2 class="mt-6 text-xl font-semibold text-gray-900 dark:text-white">Registro</h2>
-                                <p class="mt-4 text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
-                                    Crea una cuenta para empezar a usar la aplicación.
-                                </p>
-                            </div>
-                        </a>
+    <!-- How it Works Section -->
+    <section class="how-it-works-section" id="como-funciona">
+        <div class="container">
+            <div class="section-header text-center">
+                <h2>Cómo funciona MatchFilm</h2>
+                <p class="lead">Tres simples pasos para encontrar la película perfecta</p>
+            </div>
+            <div class="row steps-container">
+                <div class="col-md-4">
+                    <div class="step-card">
+                        <div class="step-icon">
+                            <i class="fas fa-user-plus"></i>
+                            <span class="step-number">1</span>
+                        </div>
+                        <h3>Agrega a tu amigo</h3>
+                        <p>Invita a tu pareja o amigo a unirse a MatchFilm y conéctense para comenzar a descubrir películas juntos.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="step-card">
+                        <div class="step-icon">
+                            <i class="fas fa-thumbs-up"></i>
+                            <span class="step-number">2</span>
+                        </div>
+                        <h3>Selecciona tus películas</h3>
+                        <p>Explora nuestro catálogo y da like a las películas que te gustaría ver. Cuantas más selecciones, mejores serán las coincidencias.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="step-card">
+                        <div class="step-icon">
+                            <i class="fas fa-heart"></i>
+                            <span class="step-number">3</span>
+                        </div>
+                        <h3>¡MATCH!</h3>
+                        <p>Cuando tú y tu amigo coincidan en una película, ¡es un match! Prepara las palomitas, la manta y disfruten juntos.</p>
                     </div>
                 </div>
             </div>
         </div>
-    </body>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section" id="caracteristicas">
+        <div class="container">
+            <div class="section-header text-center">
+                <h2>Descubre todas las posibilidades</h2>
+                <p class="lead">MatchFilm te ofrece una experiencia única para compartir el cine</p>
+            </div>
+            <div class="row align-items-center feature-row">
+                <div class="col-lg-6 feature-image">
+                    <img src="https://source.unsplash.com/random/500x400/?movies,catalog" alt="Catálogo de películas" class="img-fluid rounded-3 shadow">
+                </div>
+                <div class="col-lg-6 feature-text">
+                    <div class="feature-icon">
+                        <i class="fas fa-film"></i>
+                    </div>
+                    <h3>Amplio catálogo de películas</h3>
+                    <p>Accede a miles de películas de todos los géneros y épocas. Desde los últimos estrenos hasta los clásicos de siempre, todo está en MatchFilm.</p>
+                </div>
+            </div>
+            <div class="row align-items-center feature-row reverse">
+                <div class="col-lg-6 feature-text">
+                    <div class="feature-icon">
+                        <i class="fas fa-magic"></i>
+                    </div>
+                    <h3>Algoritmo de coincidencia inteligente</h3>
+                    <p>Nuestro sistema analiza tus gustos y los de tu amigo para encontrar las películas perfectas que ambos disfrutarán. Cuanto más uses MatchFilm, mejores serán las recomendaciones.</p>
+                </div>
+                <div class="col-lg-6 feature-image">
+                    <img src="https://source.unsplash.com/random/500x400/?algorithm,data" alt="Algoritmo de coincidencia" class="img-fluid rounded-3 shadow">
+                </div>
+            </div>
+            <div class="row align-items-center feature-row">
+                <div class="col-lg-6 feature-image">
+                    <img src="https://source.unsplash.com/random/500x400/?friends,celebration" alt="Celebración de match" class="img-fluid rounded-3 shadow">
+                </div>
+                <div class="col-lg-6 feature-text">
+                    <div class="feature-icon">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <h3>Notificaciones de match instantáneas</h3>
+                    <p>Recibe notificaciones al instante cuando tú y tu amigo coincidan en una película. ¡Es hora de organizar una noche de cine!</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="testimonials-section">
+        <div class="container">
+            <div class="section-header text-center">
+                <h2>Lo que dicen nuestros usuarios</h2>
+                <p class="lead">Descubre cómo MatchFilm está cambiando la forma de disfrutar el cine</p>
+            </div>
+            <div class="row testimonials-container">
+                <div class="col-md-4">
+                    <div class="testimonial-card">
+                        <div class="testimonial-avatar">
+                            <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Usuario" class="img-fluid rounded-circle">
+                        </div>
+                        <div class="testimonial-content">
+                            <p>"Antes mi novio y yo pasábamos horas decidiendo qué película ver. Con MatchFilm, encontramos películas que nos gustan a ambos en segundos. ¡Es genial!"</p>
+                            <div class="testimonial-name">Laura G.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="testimonial-card">
+                        <div class="testimonial-avatar">
+                            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Usuario" class="img-fluid rounded-circle">
+                        </div>
+                        <div class="testimonial-content">
+                            <p>"Gracias a MatchFilm descubrí que mi mejor amigo y yo tenemos gustos cinematográficos muy parecidos. Ahora organizamos noches de cine cada semana."</p>
+                            <div class="testimonial-name">Carlos M.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="testimonial-card">
+                        <div class="testimonial-avatar">
+                            <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Usuario" class="img-fluid rounded-circle">
+                        </div>
+                        <div class="testimonial-content">
+                            <p>"La interfaz es súper intuitiva y el catálogo de películas es enorme. Me encanta recibir notificaciones cuando hay un match con mi pareja."</p>
+                            <div class="testimonial-name">Ana P.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container text-center">
+            <h2 class="mb-4">¿Listo para encontrar tu próxima película favorita?</h2>
+            <p class="lead mb-5">Únete a MatchFilm hoy y comienza a descubrir películas que te encantarán a ti y a tus amigos.</p>
+            <div class="cta-buttons">
+                @guest
+                    <a href="{{ route('register') }}" class="btn btn-primary btn-lg">Crear cuenta gratis</a>
+                    <a href="{{ route('login') }}" class="btn btn-outline-light btn-lg ms-3">Iniciar sesión</a>
+                @else
+                    <a href="{{ route('movies.index') }}" class="btn btn-primary btn-lg">Explorar películas</a>
+                    <a href="{{ route('matches.index') }}" class="btn btn-outline-light btn-lg ms-3">Ver mis matches</a>
+                @endguest
+            </div>
+        </div>
+        <div class="cta-wave">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
+                <path fill="#212529" fill-opacity="1" d="M0,160L48,170.7C96,181,192,203,288,202.7C384,203,480,181,576,165.3C672,149,768,139,864,154.7C960,171,1056,213,1152,218.7C1248,224,1344,192,1392,176L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+            </svg>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4 mb-lg-0">
+                    <h5><i class="fas fa-film me-2"></i>MatchFilm</h5>
+                    <p>Encuentra la película perfecta para ver con tus amigos y pareja. Nunca más discutas sobre qué película elegir.</p>
+                </div>
+                <div class="col-lg-2 col-md-4 mb-4 mb-md-0">
+                    <h5>Enlaces</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#como-funciona">Cómo funciona</a></li>
+                        <li><a href="#caracteristicas">Características</a></li>
+                        @guest
+                            <li><a href="{{ route('login') }}">Iniciar sesión</a></li>
+                            <li><a href="{{ route('register') }}">Registrarse</a></li>
+                        @else
+                            <li><a href="{{ route('movies.index') }}">Películas</a></li>
+                            <li><a href="{{ route('matches.index') }}">Matches</a></li>
+                        @endguest
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-4 mb-4 mb-md-0">
+                    <h5>Legal</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#">Términos de uso</a></li>
+                        <li><a href="#">Política de privacidad</a></li>
+                        <li><a href="#">Cookies</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4 col-md-4">
+                    <h5>Síguenos</h5>
+                    <div class="social-icons">
+                        <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <p class="copyright">&copy; {{ date('Y') }} MatchFilm. Todos los derechos reservados a Hugo Casado.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="{{ asset('js/landing.js') }}"></script>
+</body>
 </html>
