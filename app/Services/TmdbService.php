@@ -6,7 +6,6 @@ use App\Models\TmdbFilm;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-
 class TmdbService
 {
     protected $apiKey;
@@ -21,7 +20,7 @@ class TmdbService
     {
         // Primero intentamos obtener de la base de datos
         $cachedMovie = TmdbFilm::find($tmdbId);
-        
+
         if ($cachedMovie && $cachedMovie->cache_expires_at > now()) {
             return $cachedMovie;
         }
@@ -45,7 +44,7 @@ class TmdbService
 
             if ($response->successful()) {
                 $movieData = $response->json();
-                
+
                 // Actualizamos o creamos en la base de datos
                 TmdbFilm::updateOrCreate(
                     ['tmdb_id' => $tmdbId],
@@ -66,42 +65,50 @@ class TmdbService
     }
 
     public function getPopularMovies(int $page = 1)
-    {
-        // No usar caché para evitar el error
-        try {
-            $response = Http::get("{$this->baseUrl}/movie/popular", [
-                'api_key' => $this->apiKey,
-                'page' => $page,
-                'language' => 'es-ES',
-            ]);
-            
-            if ($response->successful()) {
-                return $response->json();
-            }
-        } catch (\Exception $e) {
-            Log::error('Error fetching popular movies from TMDB: ' . $e->getMessage());
-        }
-        
-        // Datos de ejemplo en caso de error
-        return [
-            'results' => [
-                [
-                    'id' => 1,
-                    'title' => 'Película de ejemplo 1',
-                    'overview' => 'Esta es una película de ejemplo para cuando hay un error en la API.',
-                    'poster_path' => null
-                ],
-                [
-                    'id' => 2,
-                    'title' => 'Película de ejemplo 2',
-                    'overview' => 'Esta es otra película de ejemplo.',
-                    'poster_path' => null
-                ]
-            ],
+{
+    try {
+        $response = Http::get("{$this->baseUrl}/movie/popular", [
+            'api_key' => $this->apiKey,
             'page' => $page,
-            'total_pages' => 1
-        ];
+            'language' => 'es-ES',
+        ]);
+
+        if ($response->successful()) {
+            // Asegurarnos de que cada película tenga una clave 'id'
+            $data = $response->json();
+
+            // Verificar si hay resultados
+            if (isset($data['results']) && is_array($data['results'])) {
+                // Todo está bien, devolver los datos
+                return $data;
+            }
+        }
+    } catch (\Exception $e) {
+        Log::error('Error fetching popular movies from TMDB: ' . $e->getMessage());
     }
+
+    // Datos de ejemplo en caso de error
+    return [
+        'results' => [
+            [
+                'id' => 1,
+                'title' => 'Película de ejemplo 1',
+                'overview' => 'Esta es una película de ejemplo para cuando hay un error en la API.',
+                'poster_path' => null,
+                'release_date' => '2023-01-01'
+            ],
+            [
+                'id' => 2,
+                'title' => 'Película de ejemplo 2',
+                'overview' => 'Esta es otra película de ejemplo.',
+                'poster_path' => null,
+                'release_date' => '2023-01-02'
+            ]
+        ],
+        'page' => $page,
+        'total_pages' => 1
+    ];
+}
 
     public function searchMovies(string $query, int $page = 1)
     {
@@ -113,14 +120,14 @@ class TmdbService
                 'page' => $page,
                 'language' => 'es-ES',
             ]);
-            
+
             if ($response->successful()) {
                 return $response->json();
             }
         } catch (\Exception $e) {
             Log::error('Error searching movies from TMDB: ' . $e->getMessage());
         }
-        
+
         return ['results' => []];
     }
 
@@ -132,14 +139,99 @@ class TmdbService
                 'api_key' => $this->apiKey,
                 'language' => 'es-ES',
             ]);
-            
+
             if ($response->successful()) {
                 return $response->json()['genres'];
             }
         } catch (\Exception $e) {
             Log::error('Error fetching genres from TMDB: ' . $e->getMessage());
         }
-        
+
         return [];
     }
+public function getMoviesByGenre($genreId, int $page = 1)
+{
+    try {
+        $response = Http::get("{$this->baseUrl}/discover/movie", [
+            'api_key' => $this->apiKey,
+            'with_genres' => $genreId,
+            'page' => $page,
+            'language' => 'es-ES',
+            'sort_by' => 'popularity.desc',
+            'include_adult' => false,
+        ]);
+
+        if ($response->successful()) {
+            return $response->json();
+        }
+    } catch (\Exception $e) {
+        Log::error('Error fetching movies by genre from TMDB: ' . $e->getMessage());
+    }
+
+    // Datos de ejemplo en caso de error
+    return [
+        'results' => [
+            [
+                'id' => 1,
+                'title' => 'Película de ejemplo por género',
+                'overview' => 'Esta es una película de ejemplo para cuando hay un error en la API.',
+                'poster_path' => null
+            ]
+        ],
+        'page' => $page,
+        'total_pages' => 1
+    ];
+}
+/**
+ * Genera la URL completa para un póster de película
+ *
+ * @param string|null $posterPath Ruta relativa del póster
+ * @param string $size Tamaño del póster (w92, w154, w185, w342, w500, w780, original)
+ * @return string|null URL completa del póster o null si no hay póster
+ */
+public function getPosterUrl($posterPath, $size = 'w500')
+{
+    if (empty($posterPath)) {
+        return null;
+    }
+
+    return "https://image.tmdb.org/t/p/{$size}{$posterPath}";
+}
+
+/**
+ * Genera la URL completa para un fondo de película
+ *
+ * @param string|null $backdropPath Ruta relativa del fondo
+ * @param string $size Tamaño del fondo (w300, w780, w1280, original)
+ * @return string|null URL completa del fondo o null si no hay fondo
+ */
+public function getBackdropUrl($backdropPath, $size = 'w1280')
+{
+    if (empty($backdropPath)) {
+        return null;
+    }
+
+    return "https://image.tmdb.org/t/p/{$size}{$backdropPath}";
+}
+
+/**
+ * Extrae el nombre del director de los créditos de la película
+ *
+ * @param array $credits Datos de créditos de la película
+ * @return string|null Nombre del director o null si no se encuentra
+ */
+public function getDirector($credits)
+{
+    if (!isset($credits['crew']) || !is_array($credits['crew'])) {
+        return null;
+    }
+
+    foreach ($credits['crew'] as $crewMember) {
+        if (isset($crewMember['job']) && $crewMember['job'] === 'Director') {
+            return $crewMember['name'] ?? null;
+        }
+    }
+
+    return null;
+}
 }

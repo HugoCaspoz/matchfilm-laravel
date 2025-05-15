@@ -16,34 +16,37 @@ class MovieController extends Controller
     public function __construct(TmdbService $tmdbService)
     {
         $this->tmdbService = $tmdbService;
-        $this->middleware('auth')->except(['index', 'show']);
     }
 
     public function index(Request $request)
     {
-        $movies = $this->tmdbService->getPopularMovies($request->page ?? 1);
-        return view('movies.index', compact('movies'));
+        $moviesData = $this->tmdbService->getPopularMovies($request->page ?? 1);
+
+    // Asegurarse de que estamos pasando 'results' a la vista
+    $movies = $moviesData['results'] ?? [];
+
+    return view('movies.index', compact('movies'));
     }
 
     public function show($id)
     {
         $movie = $this->tmdbService->getMovie($id);
-        
+
         $userRating = null;
         $inWatchlist = false;
-        
+
         if (Auth::check()) {
             $userRating = Rating::where('user_id', Auth::id())
                                 ->where('tmdb_id', $id)
                                 ->first();
-                                
+
             $inWatchlist = Watchlist::where('user_id', Auth::id())
                                     ->whereHas('films', function($query) use ($id) {
                                         $query->where('tmdb_id', $id);
                                     })
                                     ->exists();
         }
-        
+
         return view('movies.show', compact('movie', 'userRating', 'inWatchlist'));
     }
 
@@ -51,11 +54,11 @@ class MovieController extends Controller
     {
         $query = $request->input('query');
         $results = [];
-        
+
         if ($query) {
             $results = $this->tmdbService->searchMovies($query);
         }
-        
+
         return view('movies.search', compact('results', 'query'));
     }
 
@@ -87,7 +90,7 @@ class MovieController extends Controller
         ]);
 
         $watchlist = Watchlist::findOrFail($request->watchlist_id);
-        
+
         // Verificar si la película ya está en la lista
         if (!$watchlist->films()->where('tmdb_id', $id)->exists()) {
             $watchlist->films()->attach($id);
@@ -97,11 +100,19 @@ class MovieController extends Controller
     }
 
     public function byGenre($genreId)
-    {
-        $movies = $this->tmdbService->getMoviesByGenre($genreId);
-        $genres = $this->tmdbService->getGenres();
-        $currentGenre = collect($genres)->firstWhere('id', $genreId);
-        
-        return view('movies.by_genre', compact('movies', 'currentGenre', 'genres'));
+{
+    $movies = $this->tmdbService->getMoviesByGenre($genreId);
+    $genres = $this->tmdbService->getGenres();
+
+    // Buscar el género actual en la lista de géneros
+    $currentGenre = null;
+    foreach ($genres as $genre) {
+        if ($genre['id'] == $genreId) {
+            $currentGenre = $genre;
+            break;
+        }
     }
+
+    return view('movies.by_genre', compact('movies', 'currentGenre', 'genres'));
+}
 }
