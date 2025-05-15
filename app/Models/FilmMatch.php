@@ -8,24 +8,35 @@ use Illuminate\Database\Eloquent\Model;
 class FilmMatch extends Model
 {
     use HasFactory;
+
+    protected $table = 'matches'; // Mantiene el nombre de la tabla como 'matches'
     
     protected $fillable = [
-        'user_id', 'movie_id', 'match_score', 'liked', 'watched'
+        'user_id_1',
+        'user_id_2',
+        'tmdb_id',
+        'status',
+        'matched_at'
     ];
-    
+
     protected $casts = [
-        'match_score' => 'float',
-        'liked' => 'boolean',
-        'watched' => 'boolean',
+        'matched_at' => 'datetime',
     ];
-    
-    public function user()
+
+    // Relaciones
+    public function userOne()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id_1');
     }
-    
-    public function movie()
+
+    public function userTwo()
     {
-        return $this->belongsTo(Movie::class);
+        return $this->belongsTo(User::class, 'user_id_2');
+    }
+
+    // Método para obtener el otro usuario del match
+    public function getOtherUser($userId)
+    {
+        return $this->user_id_1 == $userId ? $this->userTwo : $this->userOne;
     }
 }
