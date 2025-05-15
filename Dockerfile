@@ -12,9 +12,9 @@ COPY composer.json composer.lock ./
 
 RUN php -v && php -m
 
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs -vvv
-
 COPY . .
+
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs -vvv
 
 RUN npm ci && npm run build
 
