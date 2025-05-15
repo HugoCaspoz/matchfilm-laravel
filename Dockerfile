@@ -1,45 +1,40 @@
-FROM php:8.1-fpm
+FROM php:8.1-cli
 
-# Instalar dependencias del sistema
+# Instalar dependencias mínimas
 RUN apt-get update && apt-get install -y \
     git \
-    curl \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
     zip \
     unzip \
-    nodejs \
-    npm \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev
 
-# Instalar extensiones PHP
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+# Instalar extensiones PHP esenciales
+RUN docker-php-ext-install pdo_mysql mbstring
 
 # Instalar Composer
-COPY --from=composer:2.5.8 /usr/bin/composer /usr/bin/composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Configurar directorio de trabajo
-WORKDIR /var/www/html
+WORKDIR /app
 
-# Copiar todo el código de la aplicación
-COPY . .
-
-# Instalar dependencias de Composer en un solo paso
-# Esto evita problemas con dump-autoload
-RUN php -d memory_limit=-1 /usr/bin/composer install --no-interaction --no-dev --optimize-autoloader
-
-# Instalar dependencias de Node.js y construir assets
-RUN npm ci && npm run build
+# Copiar solo los archivos esenciales
+COPY composer.json composer.lock ./
+COPY app ./app
+COPY bootstrap ./bootstrap
+COPY config ./config
+COPY database ./database
+COPY public ./public
+COPY resources ./resources
+COPY routes ./routes
+COPY storage ./storage
+COPY artisan ./
 
 # Configurar permisos
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html/storage \
-    && chmod -R 755 /var/www/html/bootstrap/cache
+RUN chmod -R 755 /app/storage /app/bootstrap/cache
 
 # Exponer puerto
 EXPOSE 8000
 
-# Iniciar servidor PHP
+# Comando para iniciar la aplicación
 CMD php artisan serve --host=0.0.0.0 --port=8000
