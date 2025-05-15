@@ -53,12 +53,6 @@
 </div>
 
 <div class="row">
-    <div class="col-md-12">
-        <h2 class="mb-4">Películas Populares</h2>
-    </div>
-</div>
-
-<div class="row">
     @foreach($popularMovies['results'] ?? [] as $movie)
         <div class="col-md-3 mb-4">
             <div class="card h-100">
