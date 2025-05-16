@@ -13,7 +13,6 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     && docker-php-ext-install pdo_mysql mbstring zip curl
 
-
 # Instalar extensiones PHP esenciales
 RUN docker-php-ext-install pdo_mysql mbstring
 
@@ -26,10 +25,8 @@ WORKDIR /app
 # Copiar archivos de Composer
 COPY composer.json composer.lock ./
 
-COPY vendor ./vendor
-
-# 🔧 Instalar dependencias
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader -vvv
+# 🔧 Instalar dependencias (sin copiar vendor primero)
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
 # Copiar el resto del proyecto
 COPY app ./app
