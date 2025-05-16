@@ -1,4 +1,4 @@
-FROM php:8.1-cli
+FROM php:8.3-cli
 
 # Instalar dependencias mínimas
 RUN apt-get update && apt-get install -y \
@@ -25,7 +25,7 @@ WORKDIR /app
 # Copiar archivos de Composer
 COPY composer.json composer.lock ./
 
-# 🔧 Instalar dependencias (sin copiar vendor primero)
+# 🔧 Instalar dependencias
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
 # Copiar el resto del proyecto
