@@ -11,7 +11,10 @@ RUN apt-get update && apt-get install -y \
     curl \
     libcurl4-openssl-dev \
     libzip-dev \
-    && docker-php-ext-install pdo_mysql mbstring zip curl
+    && docker-php-ext-install pdo_mysql mbstring zip curl gd xml
+
+# Aumentar límite de memoria para PHP
+RUN echo "memory_limit=-1" > /usr/local/etc/php/conf.d/memory-limit.ini
 
 # Instalar extensiones PHP esenciales
 RUN docker-php-ext-install pdo_mysql mbstring
@@ -25,8 +28,8 @@ WORKDIR /app
 # Copiar archivos de Composer
 COPY composer.json composer.lock ./
 
-# 🔧 Instalar dependencias
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader
+# 🔧 Instalar dependencias con más información de depuración
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader --verbose
 
 # Copiar el resto del proyecto
 COPY app ./app
