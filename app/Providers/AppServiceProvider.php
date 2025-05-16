@@ -24,8 +24,8 @@ class AppServiceProvider extends ServiceProvider
         if(config('app.env') === 'production') {
             URL::forceScheme('https');
             
-            // Forzar HTTPS para Vite
-            Vite::useHttps();
+            // Eliminamos esta línea que causa el error
+            // Vite::useHttps();
         }
     }
 }

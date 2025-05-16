@@ -11,4 +11,8 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    // Configuración del servidor para forzar HTTPS en producción
+    server: {
+        https: process.env.APP_ENV === 'production',
+    },
 });
