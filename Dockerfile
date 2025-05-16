@@ -16,31 +16,17 @@ RUN apt-get update && apt-get install -y \
 # Aumentar límite de memoria para PHP
 RUN echo "memory_limit=-1" > /usr/local/etc/php/conf.d/memory-limit.ini
 
-# Instalar extensiones PHP esenciales
-RUN docker-php-ext-install pdo_mysql mbstring
-
 # Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Configurar directorio de trabajo
 WORKDIR /app
 
-# Copiar archivos de Composer
-COPY composer.json composer.lock ./
+# Copiar TODOS los archivos del proyecto primero
+COPY . .
 
-# 🔧 Instalar dependencias con más información de depuración
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader --verbose
-
-# Copiar el resto del proyecto
-COPY app ./app
-COPY bootstrap ./bootstrap
-COPY config ./config
-COPY database ./database
-COPY public ./public
-COPY resources ./resources
-COPY routes ./routes
-COPY storage ./storage
-COPY artisan ./
+# 🔧 Instalar dependencias
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
 # Configurar permisos
 RUN chmod -R 755 /app/storage /app/bootstrap/cache
