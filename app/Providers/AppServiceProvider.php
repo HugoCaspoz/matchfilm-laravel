@@ -25,7 +25,7 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
             
             // Eliminamos esta línea que causa el error
-            Vite::useHttps();
+            // Vite::useHttps();
         }
     }
 }
