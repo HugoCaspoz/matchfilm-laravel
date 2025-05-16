@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Services\MovieService;
 use App\Services\TmdbService;
 use Illuminate\Support\ServiceProvider;
 
@@ -14,9 +13,7 @@ class TmdbServiceProvider extends ServiceProvider
             return new TmdbService();
         });
         
-        $this->app->singleton(MovieService::class, function ($app) {
-            return new MovieService($app->make(TmdbService::class));
-        });
+        // Eliminamos el registro de MovieService
     }
 
     public function boot(): void
