@@ -1,146 +1,58 @@
-@extends('layouts.app')
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Mis Matches') }}
+        </h2>
+    </x-slot>
 
-@section('title', 'Mis Matches')
-
-@section('content')
-<div class="container">
-    <h1 class="mb-4">Mis Matches</h1>
-
-    <div class="row">
-        <div class="col-md-12 mb-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Matches Pendientes</h5>
-                </div>
-                <div class="card-body">
-                    @if($pendingMatches->count() > 0)
-                        <div class="list-group">
-                            @foreach($pendingMatches as $match)
-                                <div class="list-group-item list-group-item-action match-card">
-                                    <div class="d-flex w-100 justify-content-between align-items-center">
-                                        <div>
-                                            <h5 class="mb-1">
-                                                @if($match->user_id_1 == Auth::id())
-                                                    Match con {{ $match->userTwo->username }}
-                                                @else
-                                                    {{ $match->userOne->username }} quiere hacer match contigo
-                                                @endif
-                                            </h5>
-                                            <p class="mb-1">Película: {{ $match->movie->title ?? 'Película no disponible' }}</p>
-                                        </div>
-                                        <div>
-                                            @if($match->user_id_2 == Auth::id())
-                                                <form method="POST" action="{{ route('matches.accept', $match->id) }}" class="d-inline">
-                                                    @csrf
-                                                    <button type="submit" class="btn btn-success btn-sm">Aceptar</button>
-                                                </form>
-                                                <form method="POST" action="{{ route('matches.reject', $match->id) }}" class="d-inline">
-                                                    @csrf
-                                                    <button type="submit" class="btn btn-danger btn-sm">Rechazar</button>
-                                                </form>
-                                            @else
-                                                <span class="badge bg-warning text-dark">Pendiente</span>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900">
+                    @if($matches->isEmpty())
+                        <div class="text-center py-8">
+                            <i class="fas fa-film text-4xl text-gray-400 mb-4"></i>
+                            <h3 class="text-xl font-semibold mb-2">Aún no tienes matches</h3>
+                            <p class="text-gray-500 mb-4">Cuando tú y tus amigos den like a las mismas películas, aparecerán aquí.</p>
+                            <a href="{{ route('movies.index') }}" class="inline-flex items-center px-4 py-2 bg-red-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-600 focus:bg-red-600 active:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                Explorar películas
+                            </a>
                         </div>
                     @else
-                        <p class="text-muted">No tienes matches pendientes.</p>
-                    @endif
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-12 mb-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Matches Aceptados</h5>
-                </div>
-                <div class="card-body">
-                    @if($acceptedMatches->count() > 0)
-                        <div class="list-group">
-                            @foreach($acceptedMatches as $match)
-                                <div class="list-group-item list-group-item-action match-card">
-                                    <div class="d-flex w-100 justify-content-between align-items-center">
-                                        <div>
-                                            <h5 class="mb-1">
-                                                Match con 
-                                                @if($match->user_id_1 == Auth::id())
-                                                    {{ $match->userTwo->username }}
-                                                @else
-                                                    {{ $match->userOne->username }}
-                                                @endif
-                                            </h5>
-                                            <p class="mb-1">Película: {{ $match->movie->title ?? 'Película no disponible' }}</p>
-                                            <small class="text-muted">Fecha: {{ $match->matched_at->format('d/m/Y') }}</small>
-                                        </div>
-                                        <div>
-                                            <a href="{{ route('messages.show', $match->user_id_1 == Auth::id() ? $match->user_id_2 : $match->user_id_1) }}" class="btn btn-primary btn-sm">
-                                                Enviar mensaje
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    @else
-                        <p class="text-muted">No tienes matches aceptados.</p>
-                    @endif
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Posibles Matches</h5>
-                </div>
-                <div class="card-body">
-                    @if($potentialMatches->count() > 0)
-                        <div class="row">
-                            @foreach($potentialMatches as $potential)
-                                <div class="col-md-6 mb-3">
-                                    <div class="card h-100">
-                                        <div class="card-body">
-                                            <h5 class="card-title">{{ $potential['username'] }}</h5>
-                                            <p class="card-text">{{ $potential['common_count'] }} películas en común</p>
-                                            
-                                            <div class="d-flex mb-3">
-                                                @foreach($potential['common_movies'] as $movie)
-                                                    <div class="me-2">
-                                                        @if($movie->poster_path)
-                                                            <img src="https://image.tmdb.org/t/p/w92{{ $movie->poster_path }}" 
-                                                                alt="{{ $movie->title }}" 
-                                                                class="img-thumbnail" 
-                                                                style="width: 60px;"
-                                                                data-bs-toggle="tooltip" 
-                                                                title="{{ $movie->title }}">
-                                                        @else
-                                                            <div class="bg-secondary text-white d-flex align-items-center justify-content-center" 
-                                                                style="width: 60px; height: 90px;"
-                                                                data-bs-toggle="tooltip" 
-                                                                title="{{ $movie->title }}">
-                                                                <small>Sin imagen</small>
-                                                            </div>
-                                                        @endif
-                                                    </div>
-                                                @endforeach
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            @foreach($matches as $match)
+                                <div class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow duration-300">
+                                    <div class="relative h-64">
+                                        @if($match->movie_poster)
+                                            <img src="{{ $match->movie_poster }}" alt="{{ $match->movie_title }}" class="w-full h-full object-cover">
+                                        @else
+                                            <div class="w-full h-full flex items-center justify-center bg-gray-200">
+                                                <i class="fas fa-film text-4xl text-gray-400"></i>
                                             </div>
-                                            
-                                            <a href="{{ route('profile.show', ['user' => $potential['user_id']]) }}" class="btn btn-outline-primary btn-sm">Ver perfil</a>
+                                        @endif
+                                        <div class="absolute top-0 right-0 bg-red-500 text-white px-3 py-1 rounded-bl-lg">
+                                            <i class="fas fa-heart mr-1"></i> Match
                                         </div>
+                                    </div>
+                                    <div class="p-4">
+                                        <h3 class="font-bold text-lg mb-2 truncate">{{ $match->movie_title }}</h3>
+                                        <p class="text-gray-600 mb-4">
+                                            <i class="fas fa-user mr-1"></i> Match con {{ $match->friend->name }}
+                                        </p>
+                                        <p class="text-gray-500 text-sm">
+                                            <i class="fas fa-calendar-alt mr-1"></i> {{ $match->created_at->format('d/m/Y') }}
+                                        </p>
                                     </div>
                                 </div>
                             @endforeach
                         </div>
-                    @else
-                        <p class="text-muted">No hay posibles matches disponibles. ¡Valora más películas para encontrar coincidencias!</p>
                     @endif
                 </div>
             </div>
         </div>
     </div>
-</div>
-@endsection
+
+    @push('styles')
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    @endpush
+</x-app-layout>

@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Rating;
-use App\Models\TmdbFilm;
-use App\Models\Watchlist;
+use App\Models\Match;
+use App\Models\MovieLike;
+use App\Models\Notification;
 use App\Services\TmdbService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,16 +16,17 @@ class MovieController extends Controller
     public function __construct(TmdbService $tmdbService)
     {
         $this->tmdbService = $tmdbService;
+        $this->middleware('auth');
     }
 
     public function index(Request $request)
     {
         $moviesData = $this->tmdbService->getPopularMovies($request->page ?? 1);
 
-    // Asegurarse de que estamos pasando 'results' a la vista
-    $movies = $moviesData['results'] ?? [];
+        // Asegurarse de que estamos pasando 'results' a la vista
+        $movies = $moviesData['results'] ?? [];
 
-    return view('movies.index', compact('movies'));
+        return view('movies.index', compact('movies'));
     }
 
     public function show($id)
@@ -36,18 +37,12 @@ class MovieController extends Controller
         $inWatchlist = false;
 
         if (Auth::check()) {
-            $userRating = Rating::where('user_id', Auth::id())
+            $userRating = MovieLike::where('user_id', Auth::id())
                                 ->where('tmdb_id', $id)
                                 ->first();
-
-            $inWatchlist = Watchlist::where('user_id', Auth::id())
-                                    ->whereHas('films', function($query) use ($id) {
-                                        $query->where('tmdb_id', $id);
-                                    })
-                                    ->exists();
         }
 
-        return view('movies.show', compact('movie', 'userRating', 'inWatchlist'));
+        return view('movies.show', compact('movie', 'userRating'));
     }
 
     public function search(Request $request)
@@ -56,63 +51,134 @@ class MovieController extends Controller
         $results = [];
 
         if ($query) {
-            $results = $this->tmdbService->searchMovies($query);
+            $searchData = $this->tmdbService->searchMovies($query);
+            $results = $searchData['results'] ?? [];
         }
 
         return view('movies.search', compact('results', 'query'));
     }
 
-    public function rate(Request $request, $id)
+    public function like(Request $request, $id)
     {
-        $request->validate([
-            'rating' => 'required|integer|min:1|max:5',
-            'comment' => 'nullable|string|max:1000',
-        ]);
+        $user = Auth::user();
 
-        Rating::updateOrCreate(
+        // Registrar el like
+        $movieLike = MovieLike::updateOrCreate(
             [
-                'user_id' => Auth::id(),
+                'user_id' => $user->id,
                 'tmdb_id' => $id,
             ],
             [
-                'rating' => $request->rating,
-                'comment' => $request->comment,
+                'liked' => true,
             ]
         );
 
-        return redirect()->back()->with('success', 'Tu valoración ha sido guardada.');
+        // Verificar si hay match con algún amigo
+        $match = $this->checkForMatch($user->id, $id);
+
+        return response()->json([
+            'success' => true,
+            'match' => $match
+        ]);
     }
 
-    public function addToWatchlist(Request $request, $id)
+    public function dislike(Request $request, $id)
     {
-        $request->validate([
-            'watchlist_id' => 'required|exists:watchlists,id,user_id,' . Auth::id(),
+        $user = Auth::user();
+
+        // Registrar el dislike
+        MovieLike::updateOrCreate(
+            [
+                'user_id' => $user->id,
+                'tmdb_id' => $id,
+            ],
+            [
+                'liked' => false,
+            ]
+        );
+
+        return response()->json([
+            'success' => true
         ]);
+    }
 
-        $watchlist = Watchlist::findOrFail($request->watchlist_id);
+    protected function checkForMatch($userId, $tmdbId)
+    {
+        // Obtener amigos del usuario
+        $user = Auth::user();
+        $friends = $user->friends()->pluck('users.id')->toArray();
 
-        // Verificar si la película ya está en la lista
-        if (!$watchlist->films()->where('tmdb_id', $id)->exists()) {
-            $watchlist->films()->attach($id);
+        // Buscar si algún amigo ha dado like a la misma película
+        $friendLikes = MovieLike::where('tmdb_id', $tmdbId)
+                                ->where('liked', true)
+                                ->whereIn('user_id', $friends)
+                                ->with('user')
+                                ->get();
+
+        if ($friendLikes->isNotEmpty()) {
+            // Hay match con al menos un amigo
+            $friendLike = $friendLikes->first();
+            $friendId = $friendLike->user_id;
+
+            // Obtener detalles de la película
+            $movie = $this->tmdbService->getMovie($tmdbId);
+
+            // Crear registro de match
+            $match = Match::create([
+                'user_id' => $userId,
+                'friend_id' => $friendId,
+                'tmdb_id' => $tmdbId,
+                'movie_title' => $movie['title'] ?? 'Película sin título',
+                'movie_poster' => $movie['poster_path'] ? 'https://image.tmdb.org/t/p/w500' . $movie['poster_path'] : null,
+            ]);
+
+            // Crear match recíproco
+            Match::create([
+                'user_id' => $friendId,
+                'friend_id' => $userId,
+                'tmdb_id' => $tmdbId,
+                'movie_title' => $movie['title'] ?? 'Película sin título',
+                'movie_poster' => $movie['poster_path'] ? 'https://image.tmdb.org/t/p/w500' . $movie['poster_path'] : null,
+            ]);
+
+            // Crear notificación para el amigo
+            Notification::create([
+                'user_id' => $friendId,
+                'from_user_id' => $userId,
+                'type' => 'match',
+                'message' => 'Tienes un nuevo match para ver ' . ($movie['title'] ?? 'una película'),
+                'read' => false,
+                'data' => [
+                    'tmdb_id' => $tmdbId,
+                    'movie_title' => $movie['title'] ?? 'Película sin título',
+                    'movie_poster' => $movie['poster_path'] ? 'https://image.tmdb.org/t/p/w500' . $movie['poster_path'] : null,
+                ],
+            ]);
+
+            return [
+                'user' => $friendLike->user,
+                'movie' => $movie
+            ];
         }
 
-        return redirect()->back()->with('success', 'Película añadida a tu lista.');
+        return null;
     }
 
     public function byGenre($genreId)
-{
-    $movies = $this->tmdbService->getMoviesByGenre($genreId);
-    $genres = $this->tmdbService->getGenres();
+    {
+        $moviesData = $this->tmdbService->getMoviesByGenre($genreId);
+        $movies = $moviesData['results'] ?? [];
+        $genres = $this->tmdbService->getGenres();
 
-    // Buscar el género actual en la lista de géneros
-    $currentGenre = null;
-    foreach ($genres as $genre) {
-        if ($genre['id'] == $genreId) {
-            $currentGenre = $genre;
-            break;
+        // Buscar el género actual en la lista de géneros
+        $currentGenre = null;
+        foreach ($genres as $genre) {
+            if ($genre['id'] == $genreId) {
+                $currentGenre = $genre;
+                break;
+            }
         }
-    }
 
-    return view('movies.by_genre', compact('movies', 'currentGenre', 'genres'));
-}
+        return view('movies.by_genre', compact('movies', 'currentGenre', 'genres'));
+    }
 }

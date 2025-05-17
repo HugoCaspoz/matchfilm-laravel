@@ -10,44 +10,54 @@
 
         <main id="main">
             <div class="card-container">
-                <div id="movie" class="movie-card">
-                    <div class="movie-poster">
-                        @if(isset($movies[0]['poster_path']) && $movies[0]['poster_path'])
-                            <img id="linkImagen" src="https://image.tmdb.org/t/p/w500{{ $movies[0]['poster_path'] }}" alt="Poster de la película" />
-                        @else
-                            <img id="linkImagen" src="https://via.placeholder.com/500x750?text=No+Image" alt="Poster de la película" />
-                        @endif
-                        <div class="movie-rating">
-                            @if(isset($movies[0]['vote_average']))
-                                @php
-                                    $rating = $movies[0]['vote_average'];
-                                    $ratingClass = $rating >= 7.5 ? 'green' : ($rating >= 5 ? 'orange' : 'red');
-                                @endphp
-                                <span id="nota" class="{{ $ratingClass }}">{{ number_format($rating, 1) }}</span>
+                @if(count($movies) > 0)
+                    <div id="movie" class="movie-card">
+                        <div class="movie-poster">
+                            @if(isset($movies[0]['poster_path']) && $movies[0]['poster_path'])
+                                <img id="linkImagen" src="https://image.tmdb.org/t/p/w500{{ $movies[0]['poster_path'] }}" alt="Poster de la película" />
                             @else
-                                <span id="nota" class="">N/A</span>
+                                <img id="linkImagen" src="https://via.placeholder.com/500x750?text=No+Image" alt="Poster de la película" />
                             @endif
+                            <div class="movie-rating">
+                                @if(isset($movies[0]['vote_average']))
+                                    @php
+                                        $rating = $movies[0]['vote_average'];
+                                        $ratingClass = $rating >= 7.5 ? 'green' : ($rating >= 5 ? 'orange' : 'red');
+                                    @endphp
+                                    <span id="nota" class="{{ $ratingClass }}">{{ number_format($rating, 1) }}</span>
+                                @else
+                                    <span id="nota" class="">N/A</span>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div id="movie-info" class="movie-info">
+                            <h3 id="titulo" class="movie-title">{{ $movies[0]['title'] ?? 'Cargando...' }}</h3>
+                        </div>
+
+                        <div id="overview" class="movie-overview">
+                            <h4>Descripción:</h4>
+                            <p id="descripcion">{{ $movies[0]['overview'] ?? 'No hay descripción disponible.' }}</p>
                         </div>
                     </div>
 
-                    <div id="movie-info" class="movie-info">
-                        <h3 id="titulo" class="movie-title">{{ $movies[0]['title'] ?? 'Cargando...' }}</h3>
+                    <div id="acciones" class="action-buttons">
+                        <button id="dislike" class="action-btn dislike">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        <button id="like" class="action-btn like">
+                            <i class="fas fa-heart"></i>
+                        </button>
                     </div>
-
-                    <div id="overview" class="movie-overview">
-                        <h4>Descripción:</h4>
-                        <p id="descripcion">{{ $movies[0]['overview'] ?? 'No hay descripción disponible.' }}</p>
+                @else
+                    <div class="not-logged-container">
+                        <div class="not-logged-content">
+                            <i class="fas fa-film mb-4" style="font-size: 3rem; color: var(--primary-color);"></i>
+                            <h2>No hay películas disponibles</h2>
+                            <p>No se pudieron cargar películas en este momento. Inténtalo de nuevo más tarde.</p>
+                        </div>
                     </div>
-                </div>
-
-                <div id="acciones" class="action-buttons">
-                    <button id="dislike" class="action-btn dislike">
-                        <i class="fas fa-times"></i>
-                    </button>
-                    <button id="like" class="action-btn like">
-                        <i class="fas fa-heart"></i>
-                    </button>
-                </div>
+                @endif
             </div>
 
             <div class="instructions">
@@ -74,7 +84,7 @@
     </div>
 
     <!-- Match Modal -->
-    <div class="match-modal" id="matchModal">
+    <div class="match-modal" id="matchModal" style="display: none;">
         <div class="match-content">
             <div class="match-header">
                 <h2><i class="fas fa-heart"></i> ¡MATCH!</h2>

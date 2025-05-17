@@ -2,236 +2,104 @@
 
 namespace App\Services;
 
-use App\Models\TmdbFilm;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
+
 class TmdbService
 {
     protected $apiKey;
-    protected $baseUrl = 'https://api.themoviedb.org/3';
+    protected $baseUrl;
 
     public function __construct()
     {
-        $this->apiKey = config('services.tmdb.key', env('TMDB_API_KEY'));
+        $this->apiKey = env('TMDB_API_KEY', 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1Y2EzMWVkZGFiNjE0OGVhNWM1ODY1YWQ5NWZmMWQ4MSIsInN1YiI6IjY1ZTRlNDcyMjBlNmE1MDE2MzUxZjQzOCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.6IRKLCdBV7SK2KvzvVrlIPar4DjLApqE4RboCW99658');
+        $this->baseUrl = 'https://api.themoviedb.org/3';
     }
 
-    public function getMovie($tmdbId)
+    public function getPopularMovies($page = 1)
     {
-        // Primero intentamos obtener de la base de datos
-        $cachedMovie = TmdbFilm::find($tmdbId);
+        $cacheKey = 'popular_movies_page_' . $page;
 
-        if ($cachedMovie && $cachedMovie->cache_expires_at > now()) {
-            return $cachedMovie;
-        }
-
-        // Si no hay API key configurada, devolver datos de ejemplo
-        if (empty($this->apiKey)) {
-            return (object)[
-                'tmdb_id' => $tmdbId,
-                'title' => 'Película ' . $tmdbId,
-                'poster_path' => null,
-                'overview' => 'Descripción de ejemplo para la película ' . $tmdbId
-            ];
-        }
-
-        // Si no está en caché o expiró, obtenemos de la API
-        try {
-            $response = Http::get("{$this->baseUrl}/movie/{$tmdbId}", [
-                'api_key' => $this->apiKey,
+        return Cache::remember($cacheKey, 60 * 60, function () use ($page) {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $this->apiKey,
+                'Accept' => 'application/json',
+            ])->get($this->baseUrl . '/movie/popular', [
                 'language' => 'es-ES',
-            ]);
-
-            if ($response->successful()) {
-                $movieData = $response->json();
-
-                // Actualizamos o creamos en la base de datos
-                TmdbFilm::updateOrCreate(
-                    ['tmdb_id' => $tmdbId],
-                    [
-                        'title' => $movieData['title'],
-                        'poster_path' => $movieData['poster_path'] ?? null,
-                        'cache_expires_at' => now()->addDays(1), // Caché por 1 día
-                    ]
-                );
-
-                return TmdbFilm::find($tmdbId);
-            }
-        } catch (\Exception $e) {
-            Log::error('Error fetching movie from TMDB: ' . $e->getMessage());
-        }
-
-        return null;
-    }
-
-    public function getPopularMovies(int $page = 1)
-{
-    try {
-        $response = Http::get("{$this->baseUrl}/movie/popular", [
-            'api_key' => $this->apiKey,
-            'page' => $page,
-            'language' => 'es-ES',
-        ]);
-
-        if ($response->successful()) {
-            // Asegurarnos de que cada película tenga una clave 'id'
-            $data = $response->json();
-
-            // Verificar si hay resultados
-            if (isset($data['results']) && is_array($data['results'])) {
-                // Todo está bien, devolver los datos
-                return $data;
-            }
-        }
-    } catch (\Exception $e) {
-        Log::error('Error fetching popular movies from TMDB: ' . $e->getMessage());
-    }
-
-    // Datos de ejemplo en caso de error
-    return [
-        'results' => [
-            [
-                'id' => 1,
-                'title' => 'Película de ejemplo 1',
-                'overview' => 'Esta es una película de ejemplo para cuando hay un error en la API.',
-                'poster_path' => null,
-                'release_date' => '2023-01-01'
-            ],
-            [
-                'id' => 2,
-                'title' => 'Película de ejemplo 2',
-                'overview' => 'Esta es otra película de ejemplo.',
-                'poster_path' => null,
-                'release_date' => '2023-01-02'
-            ]
-        ],
-        'page' => $page,
-        'total_pages' => 1
-    ];
-}
-
-    public function searchMovies(string $query, int $page = 1)
-    {
-        // No usar caché para evitar el error
-        try {
-            $response = Http::get("{$this->baseUrl}/search/movie", [
-                'api_key' => $this->apiKey,
-                'query' => $query,
                 'page' => $page,
+            ]);
+
+            return $response->json();
+        });
+    }
+
+    public function getMovie($id)
+    {
+        $cacheKey = 'movie_' . $id;
+
+        return Cache::remember($cacheKey, 60 * 60 * 24, function () use ($id) {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $this->apiKey,
+                'Accept' => 'application/json',
+            ])->get($this->baseUrl . '/movie/' . $id, [
                 'language' => 'es-ES',
             ]);
 
-            if ($response->successful()) {
-                return $response->json();
-            }
-        } catch (\Exception $e) {
-            Log::error('Error searching movies from TMDB: ' . $e->getMessage());
-        }
+            return $response->json();
+        });
+    }
 
-        return ['results' => []];
+    public function searchMovies($query)
+    {
+        $cacheKey = 'search_movies_' . md5($query);
+
+        return Cache::remember($cacheKey, 60 * 30, function () use ($query) {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $this->apiKey,
+                'Accept' => 'application/json',
+            ])->get($this->baseUrl . '/search/movie', [
+                'query' => $query,
+                'language' => 'es-ES',
+                'include_adult' => false,
+                'page' => 1,
+            ]);
+
+            return $response->json();
+        });
+    }
+
+    public function getMoviesByGenre($genreId, $page = 1)
+    {
+        $cacheKey = 'movies_genre_' . $genreId . '_page_' . $page;
+
+        return Cache::remember($cacheKey, 60 * 60, function () use ($genreId, $page) {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $this->apiKey,
+                'Accept' => 'application/json',
+            ])->get($this->baseUrl . '/discover/movie', [
+                'with_genres' => $genreId,
+                'language' => 'es-ES',
+                'page' => $page,
+            ]);
+
+            return $response->json();
+        });
     }
 
     public function getGenres()
     {
-        // No usar caché para evitar el error
-        try {
-            $response = Http::get("{$this->baseUrl}/genre/movie/list", [
-                'api_key' => $this->apiKey,
+        $cacheKey = 'movie_genres';
+
+        return Cache::remember($cacheKey, 60 * 60 * 24 * 7, function () {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $this->apiKey,
+                'Accept' => 'application/json',
+            ])->get($this->baseUrl . '/genre/movie/list', [
                 'language' => 'es-ES',
             ]);
 
-            if ($response->successful()) {
-                return $response->json()['genres'];
-            }
-        } catch (\Exception $e) {
-            Log::error('Error fetching genres from TMDB: ' . $e->getMessage());
-        }
-
-        return [];
+            $data = $response->json();
+            return $data['genres'] ?? [];
+        });
     }
-public function getMoviesByGenre($genreId, int $page = 1)
-{
-    try {
-        $response = Http::get("{$this->baseUrl}/discover/movie", [
-            'api_key' => $this->apiKey,
-            'with_genres' => $genreId,
-            'page' => $page,
-            'language' => 'es-ES',
-            'sort_by' => 'popularity.desc',
-            'include_adult' => false,
-        ]);
-
-        if ($response->successful()) {
-            return $response->json();
-        }
-    } catch (\Exception $e) {
-        Log::error('Error fetching movies by genre from TMDB: ' . $e->getMessage());
-    }
-
-    // Datos de ejemplo en caso de error
-    return [
-        'results' => [
-            [
-                'id' => 1,
-                'title' => 'Película de ejemplo por género',
-                'overview' => 'Esta es una película de ejemplo para cuando hay un error en la API.',
-                'poster_path' => null
-            ]
-        ],
-        'page' => $page,
-        'total_pages' => 1
-    ];
-}
-/**
- * Genera la URL completa para un póster de película
- *
- * @param string|null $posterPath Ruta relativa del póster
- * @param string $size Tamaño del póster (w92, w154, w185, w342, w500, w780, original)
- * @return string|null URL completa del póster o null si no hay póster
- */
-public function getPosterUrl($posterPath, $size = 'w500')
-{
-    if (empty($posterPath)) {
-        return null;
-    }
-
-    return "https://image.tmdb.org/t/p/{$size}{$posterPath}";
-}
-
-/**
- * Genera la URL completa para un fondo de película
- *
- * @param string|null $backdropPath Ruta relativa del fondo
- * @param string $size Tamaño del fondo (w300, w780, w1280, original)
- * @return string|null URL completa del fondo o null si no hay fondo
- */
-public function getBackdropUrl($backdropPath, $size = 'w1280')
-{
-    if (empty($backdropPath)) {
-        return null;
-    }
-
-    return "https://image.tmdb.org/t/p/{$size}{$backdropPath}";
-}
-
-/**
- * Extrae el nombre del director de los créditos de la película
- *
- * @param array $credits Datos de créditos de la película
- * @return string|null Nombre del director o null si no se encuentra
- */
-public function getDirector($credits)
-{
-    if (!isset($credits['crew']) || !is_array($credits['crew'])) {
-        return null;
-    }
-
-    foreach ($credits['crew'] as $crewMember) {
-        if (isset($crewMember['job']) && $crewMember['job'] === 'Director') {
-            return $crewMember['name'] ?? null;
-        }
-    }
-
-    return null;
-}
 }
