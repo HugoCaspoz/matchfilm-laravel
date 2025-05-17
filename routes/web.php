@@ -55,7 +55,18 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/notifications/read/{id}', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read.all');
     Route::get('/notifications/count', [NotificationController::class, 'getUnreadCount'])->name('notifications.count');
+
+    // Servir archivos CSS y JS
+    Route::get('/serve-css/{filename}', [App\Http\Controllers\AssetController::class, 'serveCSS'])->name('serve.css');
+    Route::get('/serve-js/{filename}', [App\Http\Controllers\AssetController::class, 'serveJS'])->name('serve.js');
 });
+
+// Rutas para servir archivos CSS y JS
+Route::get('/css/{filename}', [App\Http\Controllers\AssetController::class, 'serveCSS'])->name('serve.css');
+Route::get('/js/{filename}', [App\Http\Controllers\AssetController::class, 'serveJS'])->name('serve.js');
+
+// Añadir esta ruta para servir el logo por defecto
+Route::get('/img/default-logo.png', [App\Http\Controllers\ImageController::class, 'defaultLogo'])->name('default.logo');
 
 // Rutas de autenticación (Laravel ya las proporciona si usas Breeze o Jetstream)
 require __DIR__.'/auth.php';
