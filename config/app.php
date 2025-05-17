@@ -52,7 +52,20 @@ return [
     |
     */
 
-    'url' => env('APP_URL', env('APP_URL')),
+    'url' => env('APP_URL', 'http://localhost'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Asset URL
+    |--------------------------------------------------------------------------
+    |
+    | This URL is used by the Laravel asset helpers to generate URLs to
+    | assets like CSS, JavaScript, and images. You should set this to the
+    | root of your application's assets so that they are properly linked.
+    |
+    */
+
+    'asset_url' => env('ASSET_URL', env('APP_URL')),
 
     /*
     |--------------------------------------------------------------------------
