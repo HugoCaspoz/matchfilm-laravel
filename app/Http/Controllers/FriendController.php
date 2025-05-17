@@ -17,22 +17,29 @@ class FriendController extends Controller
 
     public function index()
     {
-        $user = Auth::user();
-
-        // Amigos aceptados
-        $friends = $user->friends()->wherePivot('status', 'accepted')->get();
+        // Obtener amigos aceptados
+        $friends = \DB::table('friends')
+                    ->where('user_id', Auth::id())
+                    ->where('status', 'accepted')
+                    ->join('users', 'users.id', '=', 'friends.friend_id')
+                    ->select('users.*', 'friends.id as friendship_id')
+                    ->get();
 
         // Solicitudes pendientes enviadas
-        $sentRequests = Friend::where('user_id', $user->id)
-                              ->where('status', 'pending')
-                              ->with('friend')
-                              ->get();
+        $sentRequests = \DB::table('friends')
+                        ->where('user_id', Auth::id())
+                        ->where('status', 'pending')
+                        ->join('users', 'users.id', '=', 'friends.friend_id')
+                        ->select('users.*', 'friends.id as friendship_id')
+                        ->get();
 
         // Solicitudes pendientes recibidas
-        $receivedRequests = Friend::where('friend_id', $user->id)
-                                 ->where('status', 'pending')
-                                 ->with('user')
-                                 ->get();
+        $receivedRequests = \DB::table('friends')
+                            ->where('friend_id', Auth::id())
+                            ->where('status', 'pending')
+                            ->join('users', 'users.id', '=', 'friends.user_id')
+                            ->select('users.*', 'friends.id as friendship_id')
+                            ->get();
 
         return view('friends.index', compact('friends', 'sentRequests', 'receivedRequests'));
     }
@@ -43,7 +50,7 @@ class FriendController extends Controller
         $results = [];
 
         if ($query) {
-            $results = User::where('name', 'like', "%{$query}%")
+            $results = User::where('username', 'like', "%{$query}%")
                           ->where('id', '!=', Auth::id())
                           ->get();
         }
@@ -61,7 +68,8 @@ class FriendController extends Controller
         $friendId = $request->friend_id;
 
         // Verificar que no exista ya una solicitud
-        $existingRequest = Friend::where(function($query) use ($userId, $friendId) {
+        $existingRequest = \DB::table('friends')
+                            ->where(function($query) use ($userId, $friendId) {
                                 $query->where('user_id', $userId)
                                       ->where('friend_id', $friendId);
                             })
@@ -76,10 +84,12 @@ class FriendController extends Controller
         }
 
         // Crear solicitud
-        Friend::create([
+        \DB::table('friends')->insert([
             'user_id' => $userId,
             'friend_id' => $friendId,
             'status' => 'pending',
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         // Crear notificación
@@ -87,7 +97,7 @@ class FriendController extends Controller
             'user_id' => $friendId,
             'from_user_id' => $userId,
             'type' => 'friend_request',
-            'message' => Auth::user()->name . ' te ha enviado una solicitud de amistad.',
+            'message' => Auth::user()->username . ' te ha enviado una solicitud de amistad.',
             'read' => false,
         ]);
 
@@ -96,20 +106,31 @@ class FriendController extends Controller
 
     public function acceptRequest($id)
     {
-        $friendRequest = Friend::where('id', $id)
-                              ->where('friend_id', Auth::id())
-                              ->where('status', 'pending')
-                              ->firstOrFail();
+        $friendRequest = \DB::table('friends')
+                        ->where('id', $id)
+                        ->where('friend_id', Auth::id())
+                        ->where('status', 'pending')
+                        ->first();
+
+        if (!$friendRequest) {
+            return redirect()->back()->with('error', 'Solicitud de amistad no encontrada.');
+        }
 
         // Actualizar estado
-        $friendRequest->status = 'accepted';
-        $friendRequest->save();
+        \DB::table('friends')
+            ->where('id', $id)
+            ->update([
+                'status' => 'accepted',
+                'updated_at' => now()
+            ]);
 
         // Crear relación recíproca
-        Friend::create([
+        \DB::table('friends')->insert([
             'user_id' => Auth::id(),
             'friend_id' => $friendRequest->user_id,
             'status' => 'accepted',
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         // Crear notificación
@@ -117,7 +138,7 @@ class FriendController extends Controller
             'user_id' => $friendRequest->user_id,
             'from_user_id' => Auth::id(),
             'type' => 'friend_accepted',
-            'message' => Auth::user()->name . ' ha aceptado tu solicitud de amistad.',
+            'message' => Auth::user()->username . ' ha aceptado tu solicitud de amistad.',
             'read' => false,
         ]);
 
@@ -126,14 +147,23 @@ class FriendController extends Controller
 
     public function rejectRequest($id)
     {
-        $friendRequest = Friend::where('id', $id)
-                              ->where('friend_id', Auth::id())
-                              ->where('status', 'pending')
-                              ->firstOrFail();
+        $friendRequest = \DB::table('friends')
+                        ->where('id', $id)
+                        ->where('friend_id', Auth::id())
+                        ->where('status', 'pending')
+                        ->first();
+
+        if (!$friendRequest) {
+            return redirect()->back()->with('error', 'Solicitud de amistad no encontrada.');
+        }
 
         // Actualizar estado
-        $friendRequest->status = 'rejected';
-        $friendRequest->save();
+        \DB::table('friends')
+            ->where('id', $id)
+            ->update([
+                'status' => 'rejected',
+                'updated_at' => now()
+            ]);
 
         return redirect()->back()->with('success', 'Solicitud de amistad rechazada.');
     }
@@ -141,7 +171,8 @@ class FriendController extends Controller
     public function removeFriend($id)
     {
         // Eliminar relación en ambas direcciones
-        Friend::where(function($query) use ($id) {
+        \DB::table('friends')
+            ->where(function($query) use ($id) {
                 $query->where('user_id', Auth::id())
                       ->where('friend_id', $id);
             })

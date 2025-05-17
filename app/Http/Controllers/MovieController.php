@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Match;
+use App\Models\FilmMatch;
 use App\Models\MovieLike;
 use App\Models\Notification;
 use App\Services\TmdbService;
@@ -106,13 +106,19 @@ class MovieController extends Controller
     {
         // Obtener amigos del usuario
         $user = Auth::user();
-        $friends = $user->friends()->pluck('users.id')->toArray();
+
+        // Como no tenemos una relación de amigos directa, usamos la tabla friends
+        // Esto debe adaptarse según cómo manejes las amistades en tu aplicación
+        $friends = \DB::table('friends')
+                    ->where('user_id', $userId)
+                    ->where('status', 'accepted')
+                    ->pluck('friend_id')
+                    ->toArray();
 
         // Buscar si algún amigo ha dado like a la misma película
         $friendLikes = MovieLike::where('tmdb_id', $tmdbId)
                                 ->where('liked', true)
                                 ->whereIn('user_id', $friends)
-                                ->with('user')
                                 ->get();
 
         if ($friendLikes->isNotEmpty()) {
@@ -124,21 +130,25 @@ class MovieController extends Controller
             $movie = $this->tmdbService->getMovie($tmdbId);
 
             // Crear registro de match
-            $match = Match::create([
-                'user_id' => $userId,
+            $match = FilmMatch::create([
+                'user_id_1' => $userId,
                 'friend_id' => $friendId,
                 'tmdb_id' => $tmdbId,
                 'movie_title' => $movie['title'] ?? 'Película sin título',
                 'movie_poster' => $movie['poster_path'] ? 'https://image.tmdb.org/t/p/w500' . $movie['poster_path'] : null,
+                'matched_at' => now(),
+                'status' => 'pending'
             ]);
 
             // Crear match recíproco
-            Match::create([
-                'user_id' => $friendId,
+            FilmMatch::create([
+                'user_id_1' => $friendId,
                 'friend_id' => $userId,
                 'tmdb_id' => $tmdbId,
                 'movie_title' => $movie['title'] ?? 'Película sin título',
                 'movie_poster' => $movie['poster_path'] ? 'https://image.tmdb.org/t/p/w500' . $movie['poster_path'] : null,
+                'matched_at' => now(),
+                'status' => 'pending'
             ]);
 
             // Crear notificación para el amigo
@@ -148,15 +158,18 @@ class MovieController extends Controller
                 'type' => 'match',
                 'message' => 'Tienes un nuevo match para ver ' . ($movie['title'] ?? 'una película'),
                 'read' => false,
-                'data' => [
+                'data' => json_encode([
                     'tmdb_id' => $tmdbId,
                     'movie_title' => $movie['title'] ?? 'Película sin título',
                     'movie_poster' => $movie['poster_path'] ? 'https://image.tmdb.org/t/p/w500' . $movie['poster_path'] : null,
-                ],
+                ]),
             ]);
 
+            // Obtener el usuario amigo para devolverlo en la respuesta
+            $friendUser = \App\Models\User::find($friendId);
+
             return [
-                'user' => $friendLike->user,
+                'user' => $friendUser,
                 'movie' => $movie
             ];
         }

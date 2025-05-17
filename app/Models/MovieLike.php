@@ -31,12 +31,4 @@ class MovieLike extends Model
     {
         return $this->belongsTo(User::class);
     }
-
-    /**
-     * Get the matches associated with this movie like.
-     */
-    public function matches()
-    {
-        return $this->hasMany(Match::class, 'tmdb_id', 'tmdb_id');
-    }
 }
