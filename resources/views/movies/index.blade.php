@@ -5,51 +5,102 @@
         </h2>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 bg-white border-b border-gray-200">
-                    <form action="{{ route('movies.index') }}" method="GET" class="mb-6">
-                        <div class="flex">
-                            <input type="text" name="q" value="{{ $query ?? '' }}" placeholder="Buscar películas..." 
-                                   class="flex-1 rounded-l-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-r-md">
-                                Buscar
-                            </button>
+    <div class="main-container">
+        <div id="alert" class="alert-container"></div>
+
+        <main id="main">
+            <div class="card-container">
+                <div id="movie" class="movie-card">
+                    <div class="movie-poster">
+                        @if(isset($movies[0]['poster_path']) && $movies[0]['poster_path'])
+                            <img id="linkImagen" src="https://image.tmdb.org/t/p/w500{{ $movies[0]['poster_path'] }}" alt="Poster de la película" />
+                        @else
+                            <img id="linkImagen" src="https://via.placeholder.com/500x750?text=No+Image" alt="Poster de la película" />
+                        @endif
+                        <div class="movie-rating">
+                            @if(isset($movies[0]['vote_average']))
+                                @php
+                                    $rating = $movies[0]['vote_average'];
+                                    $ratingClass = $rating >= 7.5 ? 'green' : ($rating >= 5 ? 'orange' : 'red');
+                                @endphp
+                                <span id="nota" class="{{ $ratingClass }}">{{ number_format($rating, 1) }}</span>
+                            @else
+                                <span id="nota" class="">N/A</span>
+                            @endif
                         </div>
-                    </form>
-                    
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                        @forelse($movies as $movie)
-                            <div class="bg-white rounded-lg shadow-md overflow-hidden">
-                                <a href="{{ route('movies.show', $movie['id']) }}">
-                                    @if(isset($movie['poster_path']) && $movie['poster_path'])
-                                        <img src="https://image.tmdb.org/t/p/w500{{ $movie['poster_path'] }}" alt="{{ $movie['title'] }}" class="w-full h-64 object-cover">
-                                    @else
-                                        <div class="w-full h-64 bg-gray-200 flex items-center justify-center">
-                                            <span class="text-gray-500">Sin imagen</span>
-                                        </div>
-                                    @endif
-                                    <div class="p-4">
-                                        <h3 class="text-lg font-semibold">{{ $movie['title'] }}</h3>
-                                        <p class="text-sm text-gray-600">{{ isset($movie['release_date']) ? substr($movie['release_date'], 0, 4) : 'N/A' }}</p>
-                                        <div class="flex items-center mt-2">
-                                            <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
-                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                                            </svg>
-                                            <span class="ml-1 text-sm text-gray-600">{{ $movie['vote_average'] ?? 'N/A' }}</span>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                        @empty
-                            <div class="col-span-full text-center py-12">
-                                <p class="text-gray-500">No se encontraron películas</p>
-                            </div>
-                        @endforelse
+                    </div>
+
+                    <div id="movie-info" class="movie-info">
+                        <h3 id="titulo" class="movie-title">{{ $movies[0]['title'] ?? 'Cargando...' }}</h3>
+                    </div>
+
+                    <div id="overview" class="movie-overview">
+                        <h4>Descripción:</h4>
+                        <p id="descripcion">{{ $movies[0]['overview'] ?? 'No hay descripción disponible.' }}</p>
                     </div>
                 </div>
+
+                <div id="acciones" class="action-buttons">
+                    <button id="dislike" class="action-btn dislike">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <button id="like" class="action-btn like">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="instructions">
+                <div class="instruction-item">
+                    <div class="instruction-icon">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    <p>Desliza hacia arriba para ver la descripción completa</p>
+                </div>
+                <div class="instruction-item">
+                    <div class="instruction-icon">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <p>Da like a las películas que quieras ver con tu amigo</p>
+                </div>
+                <div class="instruction-item">
+                    <div class="instruction-icon">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <p>Recibirás una notificación cuando haya un match</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Match Modal -->
+    <div class="match-modal" id="matchModal">
+        <div class="match-content">
+            <div class="match-header">
+                <h2><i class="fas fa-heart"></i> ¡MATCH!</h2>
+                <p>Tú y <span id="matchUsername"></span> queréis ver esta película</p>
+            </div>
+            <div class="match-movie">
+                <img id="matchMovieImage" alt="Poster de la película" />
+                <h3 id="matchMovieTitle"></h3>
+            </div>
+            <div class="match-actions">
+                <button id="continueBtn" class="btn-continue">Seguir explorando</button>
+                <a href="{{ route('matches.index') }}" class="btn-view-matches">Ver mis matches</a>
             </div>
         </div>
     </div>
+
+    @push('styles')
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('css/index.css') }}">
+    @endpush
+
+    @push('scripts')
+    <script>
+        // Pasar los datos de películas al JavaScript
+        window.moviesData = @json($movies);
+    </script>
+    <script src="{{ asset('js/index.js') }}"></script>
+    @endpush
 </x-app-layout>
