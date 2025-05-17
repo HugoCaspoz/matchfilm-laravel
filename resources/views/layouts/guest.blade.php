@@ -10,16 +10,16 @@
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-        
+
         <!-- Assets -->
         @if(config('assets.use_vite', false))
-            @vite(['resources/css/app.css', 'resources/js/app.js'])
+            @vite(['public/css/app.css', 'public/js/app.js'])
         @else
             <link href="{{ config('assets.css.bootstrap') }}" rel="stylesheet">
             <link href="{{ config('assets.css.fontawesome') }}" rel="stylesheet">
             <link href="{{ config('assets.css.custom') }}" rel="stylesheet">
         @endif
-        
+
         <style>
             /* Estilos básicos para formularios */
             .form-control {
@@ -36,13 +36,13 @@
                 transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
                 margin-bottom: 1rem;
             }
-            
+
             .form-label {
                 margin-bottom: 0.5rem;
                 font-weight: 500;
                 display: block;
             }
-            
+
             .btn-primary {
                 color: #fff;
                 background-color: #e50914;
@@ -53,12 +53,12 @@
                 border-radius: 0.25rem;
                 cursor: pointer;
             }
-            
+
             .btn-primary:hover {
                 background-color: #cc0812;
                 border-color: #cc0812;
             }
-            
+
             .invalid-feedback {
                 display: block;
                 width: 100%;
@@ -66,7 +66,7 @@
                 font-size: 0.875em;
                 color: #dc3545;
             }
-            
+
             .is-invalid {
                 border-color: #dc3545;
             }
@@ -107,21 +107,21 @@
                                 <i class="fas fa-film fa-3x text-danger"></i>
                                 <h3 class="mt-2">MatchFilm</h3>
                             </div>
-                            
+
                             {{ $slot }}
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        
+
         <!-- Footer -->
         <footer class="bg-dark text-white py-4 mt-5">
             <div class="container text-center">
                 <p>&copy; {{ date('Y') }} MatchFilm. Todos los derechos reservados a Hugo Casado.</p>
             </div>
         </footer>
-        
+
         <!-- JavaScript -->
         @if(!config('assets.use_vite', false))
             <script src="{{ config('assets.js.bootstrap') }}"></script>
