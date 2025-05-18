@@ -204,7 +204,8 @@ document.addEventListener("DOMContentLoaded", () => {
       // Obtener el token CSRF
       const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content")
 
-      fetch(`/api/movies/${currentMovie.id}/like`, {
+      // Usar la ruta correcta para el like
+      fetch(`/movies/${currentMovie.id}/like`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -245,7 +246,8 @@ document.addEventListener("DOMContentLoaded", () => {
       // Obtener el token CSRF
       const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content")
 
-      fetch(`/api/movies/${currentMovie.id}/dislike`, {
+      // Usar la ruta correcta para el dislike
+      fetch(`/movies/${currentMovie.id}/dislike`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
