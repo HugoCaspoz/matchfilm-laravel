@@ -80,15 +80,44 @@ document.addEventListener("DOMContentLoaded", () => {
     return false
   }
 
+  function showNoMoreMoviesState() {
+    const movieElement = document.getElementById("movie")
+    if (movieElement) {
+      movieElement.className = "not-logged-container"
+      movieElement.innerHTML = `
+                <div class="not-logged-content">
+                <i class="fas fa-check-circle mb-4" style="font-size: 3rem; color: var(--primary-color);"></i>
+                <h2>¡Ya has visto todas las películas!</h2>
+                <p>Has valorado todas las películas disponibles. Vuelve más tarde para descubrir nuevas películas.</p>
+                <a href="/movies?page=1" class="btn-login mt-3">Refrescar películas</a>
+                </div>
+            `
+
+      // Ocultar los botones de acción
+      const accionesElement = document.getElementById("acciones")
+      if (accionesElement) {
+        accionesElement.style.display = "none"
+      }
+
+      return true
+    }
+    return false
+  }
+
   function loadNextMovie() {
-    // Si no hay más películas, recargar la página para obtener nuevas
-    if (currentMovieIndex >= movies.length - 1) {
+    // Si no hay más películas, mostrar mensaje
+    if (movies.length === 0 || currentMovieIndex >= movies.length - 1) {
       // Obtener el número de página actual de la URL o usar 1 como predeterminado
       const urlParams = new URLSearchParams(window.location.search)
       const currentPage = Number.parseInt(urlParams.get("page") || "1")
 
-      // Redirigir a la siguiente página
-      window.location.href = `/movies?page=${currentPage + 1}`
+      if (currentPage < 5) {
+        // Redirigir a la siguiente página
+        window.location.href = `/movies?page=${currentPage + 1}`
+      } else {
+        // Mostrar mensaje de que no hay más películas
+        showNoMoreMoviesState()
+      }
       return
     }
 
@@ -180,6 +209,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Mostrar la primera película si hay películas disponibles
   if (movies.length > 0) {
     showMovie(movies[currentMovieIndex])
+  } else {
+    // Si no hay películas disponibles, mostrar mensaje
+    showNoMoreMoviesState()
   }
 
   // Event listeners para los botones de like y dislike

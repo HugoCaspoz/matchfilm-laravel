@@ -24,10 +24,45 @@ class MovieController extends Controller
 
     public function index(Request $request)
     {
-        $moviesData = $this->tmdbService->getPopularMovies($request->page ?? 1);
-
-        // Asegurarse de que estamos pasando 'results' a la vista
+        $page = $request->page ?? 1;
+        $moviesData = $this->tmdbService->getPopularMovies($page);
         $movies = $moviesData['results'] ?? [];
+
+        // Si el usuario está autenticado, filtrar películas que ya han recibido like/dislike
+        if (Auth::check()) {
+            $userId = Auth::id();
+
+            // Obtener IDs de películas que el usuario ya ha valorado
+            $ratedMovieIds = MovieLike::where('user_id', $userId)
+                ->pluck('tmdb_id')
+                ->toArray();
+
+            // Filtrar las películas para excluir las que ya han sido valoradas
+            $movies = array_filter($movies, function($movie) use ($ratedMovieIds) {
+                return !in_array($movie['id'], $ratedMovieIds);
+            });
+
+            // Si después de filtrar quedan muy pocas películas (menos de 5), cargar más páginas
+            if (count($movies) < 5 && $page < 5) {
+                $additionalPage = $page + 1;
+                $additionalMoviesData = $this->tmdbService->getPopularMovies($additionalPage);
+                $additionalMovies = $additionalMoviesData['results'] ?? [];
+
+                // Filtrar también las películas adicionales
+                $additionalMovies = array_filter($additionalMovies, function($movie) use ($ratedMovieIds) {
+                    return !in_array($movie['id'], $ratedMovieIds);
+                });
+
+                // Combinar con las películas existentes
+                $movies = array_merge($movies, $additionalMovies);
+
+                // Limitar a 20 películas para no sobrecargar
+                $movies = array_slice($movies, 0, 20);
+            }
+
+            // Reindexar el array para evitar problemas con índices no secuenciales
+            $movies = array_values($movies);
+        }
 
         return view('movies.index', compact('movies'));
     }
@@ -56,6 +91,24 @@ class MovieController extends Controller
         if ($query) {
             $searchData = $this->tmdbService->searchMovies($query);
             $results = $searchData['results'] ?? [];
+
+            // Si el usuario está autenticado, filtrar películas que ya han recibido like/dislike
+            if (Auth::check()) {
+                $userId = Auth::id();
+
+                // Obtener IDs de películas que el usuario ya ha valorado
+                $ratedMovieIds = MovieLike::where('user_id', $userId)
+                    ->pluck('tmdb_id')
+                    ->toArray();
+
+                // Filtrar las películas para excluir las que ya han sido valoradas
+                $results = array_filter($results, function($movie) use ($ratedMovieIds) {
+                    return !in_array($movie['id'], $ratedMovieIds);
+                });
+
+                // Reindexar el array
+                $results = array_values($results);
+            }
         }
 
         return view('movies.search', compact('results', 'query'));
@@ -206,6 +259,24 @@ class MovieController extends Controller
         $moviesData = $this->tmdbService->getMoviesByGenre($genreId);
         $movies = $moviesData['results'] ?? [];
         $genres = $this->tmdbService->getGenres();
+
+        // Si el usuario está autenticado, filtrar películas que ya han recibido like/dislike
+        if (Auth::check()) {
+            $userId = Auth::id();
+
+            // Obtener IDs de películas que el usuario ya ha valorado
+            $ratedMovieIds = MovieLike::where('user_id', $userId)
+                ->pluck('tmdb_id')
+                ->toArray();
+
+            // Filtrar las películas para excluir las que ya han sido valoradas
+            $movies = array_filter($movies, function($movie) use ($ratedMovieIds) {
+                return !in_array($movie['id'], $ratedMovieIds);
+            });
+
+            // Reindexar el array
+            $movies = array_values($movies);
+        }
 
         // Buscar el género actual en la lista de géneros
         $currentGenre = null;

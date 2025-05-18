@@ -51,7 +51,7 @@ class FriendController extends Controller
         $results = [];
 
         if ($query) {
-            $results = User::where('name', 'like', "%{$query}%")
+            $results = User::where('username', 'like', "%{$query}%")
                           ->where('id', '!=', Auth::id())
                           ->get();
         }
@@ -98,7 +98,7 @@ class FriendController extends Controller
             'user_id' => $friendId,
             'from_user_id' => $userId,
             'type' => 'friend_request',
-            'message' => Auth::user()->name . ' te ha enviado una solicitud de amistad.',
+            'message' => Auth::user()->username . ' te ha enviado una solicitud de amistad.',
             'read' => false,
         ]);
 
@@ -139,7 +139,7 @@ class FriendController extends Controller
             'user_id' => $friendRequest->user_id,
             'from_user_id' => Auth::id(),
             'type' => 'friend_accepted',
-            'message' => Auth::user()->name . ' ha aceptado tu solicitud de amistad.',
+            'message' => Auth::user()->username . ' ha aceptado tu solicitud de amistad.',
             'read' => false,
         ]);
 
