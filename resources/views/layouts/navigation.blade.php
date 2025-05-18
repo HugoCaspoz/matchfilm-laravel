@@ -15,6 +15,7 @@
                 <span class="nav-text">Películas</span>
             </a>
 
+            @auth
             <a href="{{ route('matches.index') }}" class="nav-link {{ request()->routeIs('matches.index') ? 'active' : '' }}">
                 <i class="fas fa-heart"></i>
                 <span class="nav-text">Matches</span>
@@ -29,6 +30,7 @@
                 <i class="fas fa-bell"></i>
                 <span class="nav-text">Notificaciones</span>
             </a>
+            @endauth
         </div>
 
         <!-- User Actions -->
