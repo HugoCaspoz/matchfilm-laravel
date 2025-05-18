@@ -4,9 +4,14 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Mis Películas Favoritas') }}
             </h2>
-            <a href="{{ route('favorites.search') }}" class="btn" style="background-color: #ab9079; color: white;">
-                <i class="fas fa-search me-2"></i> Buscar Películas
-            </a>
+            <div class="d-flex">
+                <button id="searchButton" class="btn me-2" style="background-color: #586294; color: white;">
+                    <i class="fas fa-search me-2"></i> Buscar
+                </button>
+                <a href="{{ route('favorites.search') }}" class="btn" style="background-color: #ab9079; color: white;">
+                    <i class="fas fa-search-plus me-2"></i> Búsqueda Avanzada
+                </a>
+            </div>
         </div>
     </x-slot>
 
@@ -28,10 +33,23 @@
                 @endif
             </div>
 
+            <!-- Barra de búsqueda desplegable -->
+            <div class="search-container">
+                <div class="search-bar">
+                    <div class="search-input-group">
+                        <input type="text" class="form-control" id="searchInput" placeholder="Buscar películas...">
+                        <button class="btn btn-primary" id="searchActionButton">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    <div id="resultadosBusqueda" class="bg-white p-3 rounded"></div>
+                </div>
+            </div>
+
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     @if(count($movies) === 0)
-                        <div class="text-center py-8">
+                        <div class="text-center py-8 no-results">
                             <i class="fas fa-heart text-4xl text-gray-400 mb-4"></i>
                             <h3 class="text-xl font-semibold mb-2">Aún no tienes películas favoritas</h3>
                             <p class="text-gray-500 mb-4">Explora películas y marca las que te gusten para verlas aquí.</p>
@@ -40,50 +58,34 @@
                             </a>
                         </div>
                     @else
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div id="resultados" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             @foreach($movies as $movie)
-                                <div class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow duration-300 movie-card">
-                                    <div class="relative h-64">
+                                <div class="movie-card">
+                                    <div class="relative">
                                         @if(isset($movie['poster_path']) && $movie['poster_path'])
-                                            <img src="https://image.tmdb.org/t/p/w500{{ $movie['poster_path'] }}" alt="{{ $movie['title'] }}" class="w-full h-full object-cover">
+                                            <img src="https://image.tmdb.org/t/p/w500{{ $movie['poster_path'] }}" alt="{{ $movie['title'] }}">
                                         @else
-                                            <div class="w-full h-full flex items-center justify-center bg-gray-200">
+                                            <div class="w-full h-64 flex items-center justify-center bg-gray-200">
                                                 <i class="fas fa-film text-4xl text-gray-400"></i>
                                             </div>
                                         @endif
-                                        <div class="absolute top-0 right-0 m-2">
-                                            <form action="{{ route('favorites.toggle', $movie['id']) }}" method="POST">
-                                                @csrf
-                                                <input type="hidden" name="action" value="unlike">
-                                                <button type="submit" class="bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition-colors duration-300">
-                                                    <i class="fas fa-heart"></i>
-                                                </button>
-                                            </form>
-                                        </div>
+                                        <button
+                                            class="favorite-btn btn-danger favorite-btn"
+                                            data-movie-id="{{ $movie['id'] }}"
+                                            data-action="unlike"
+                                        >
+                                            <i class="fas fa-heart"></i>
+                                        </button>
+                                    </div>
+                                    <div class="movie-info">
+                                        <h3>{{ $movie['title'] }}</h3>
                                         @if(isset($movie['vote_average']))
-                                            <div class="absolute bottom-0 left-0 bg-gray-900 bg-opacity-75 text-white px-2 py-1 m-2 rounded">
-                                                <i class="fas fa-star text-yellow-400 mr-1"></i>
-                                                {{ number_format($movie['vote_average'], 1) }}
-                                            </div>
+                                            <span class="{{ getColor($movie['vote_average']) }}">{{ number_format($movie['vote_average'], 1) }}</span>
                                         @endif
                                     </div>
-                                    <div class="p-4">
-                                        <h3 class="font-bold text-lg mb-2 truncate">{{ $movie['title'] }}</h3>
-                                        <p class="text-gray-600 text-sm mb-2">
-                                            @if(isset($movie['release_date']))
-                                                {{ \Carbon\Carbon::parse($movie['release_date'])->format('Y') }}
-                                            @else
-                                                Año desconocido
-                                            @endif
-                                        </p>
-                                        <p class="text-gray-500 text-xs">
-                                            <i class="fas fa-clock mr-1"></i> Añadida {{ \Carbon\Carbon::parse($movie['liked_at'])->diffForHumans() }}
-                                        </p>
-                                    </div>
-                                    <div class="px-4 pb-4">
-                                        <a href="{{ route('movies.show', $movie['id']) }}" class="text-blue-500 hover:text-blue-700 text-sm">
-                                            Ver detalles <i class="fas fa-arrow-right ml-1"></i>
-                                        </a>
+                                    <div class="movie-overview">
+                                        <h3>Descripción:</h3>
+                                        <p>{{ $movie['overview'] ?? 'No hay descripción disponible.' }}</p>
                                     </div>
                                 </div>
                             @endforeach
@@ -96,21 +98,22 @@
 
     @push('styles')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        .movie-card {
-            transition: transform 0.3s ease;
-        }
-        .movie-card:hover {
-            transform: translateY(-5px);
-        }
-    </style>
+    <link rel="stylesheet" href="{{ asset('css/favorites.css') }}">
     @endpush
 
     @push('scripts')
+    <script src="{{ asset('js/favorites.js') }}"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Código JavaScript si es necesario
-        });
+        // Función para determinar el color según la calificación
+        function getColor(vote) {
+            if (vote >= 7.5) {
+                return "green";
+            } else if (vote >= 5) {
+                return "orange";
+            } else {
+                return "red";
+            }
+        }
     </script>
     @endpush
 </x-app-layout>
