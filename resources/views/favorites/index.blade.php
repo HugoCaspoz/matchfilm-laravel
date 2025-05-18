@@ -58,14 +58,14 @@
                             </a>
                         </div>
                     @else
-                        <div id="resultados" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div id="resultados" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                             @foreach($movies as $movie)
                                 <div class="movie-card">
-                                    <div class="relative">
+                                    <div class="movie-poster">
                                         @if(isset($movie['poster_path']) && $movie['poster_path'])
                                             <img src="https://image.tmdb.org/t/p/w500{{ $movie['poster_path'] }}" alt="{{ $movie['title'] }}">
                                         @else
-                                            <div class="w-full h-64 flex items-center justify-center bg-gray-200">
+                                            <div class="w-full h-full flex items-center justify-center bg-gray-200">
                                                 <i class="fas fa-film text-4xl text-gray-400"></i>
                                             </div>
                                         @endif
@@ -76,20 +76,20 @@
                                         >
                                             <i class="fas fa-heart"></i>
                                         </button>
-                                    </div>
-                                    <div class="movie-info">
-                                        <h3>{{ $movie['title'] }}</h3>
-                                        @if(isset($movie['vote_average']))
-                                            @php
-                                                $colorClass = "red";
-                                                if ($movie['vote_average'] >= 7.5) {
-                                                    $colorClass = "green";
-                                                } elseif ($movie['vote_average'] >= 5) {
-                                                    $colorClass = "orange";
-                                                }
-                                            @endphp
-                                            <span class="{{ $colorClass }}">{{ number_format($movie['vote_average'], 1) }}</span>
-                                        @endif
+                                        <div class="movie-info">
+                                            <h3>{{ $movie['title'] }}</h3>
+                                            @if(isset($movie['vote_average']))
+                                                @php
+                                                    $colorClass = "red";
+                                                    if ($movie['vote_average'] >= 7.5) {
+                                                        $colorClass = "green";
+                                                    } elseif ($movie['vote_average'] >= 5) {
+                                                        $colorClass = "orange";
+                                                    }
+                                                @endphp
+                                                <span class="{{ $colorClass }}">{{ number_format($movie['vote_average'], 1) }}</span>
+                                            @endif
+                                        </div>
                                     </div>
                                     <div class="movie-overview">
                                         <h3>Descripción:</h3>
