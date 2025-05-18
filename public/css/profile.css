@@ -1,0 +1,322 @@
+:root {
+  --primary-color: #ab9079;
+  --secondary-color: #586294;
+  --text-light: #ffffff;
+  --text-muted: rgba(255, 255, 255, 0.7);
+  --border-radius: 10px;
+  --box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  --transition: all 0.3s ease;
+}
+
+body {
+  background-color: var(--primary-color) !important;
+  font-family: "Poppins", sans-serif;
+  margin: 0;
+}
+
+main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 20px;
+}
+
+.card {
+  background-color: var(--secondary-color);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  border: none;
+  overflow: hidden;
+  margin: 10px;
+  color: var(--text-light);
+}
+
+.card-title {
+  color: var(--text-light);
+  font-weight: 600;
+}
+
+.card-text {
+  color: var(--text-muted);
+}
+
+/* Botones */
+.btn {
+  transition: var(--transition);
+  border-radius: 5px;
+  font-weight: 500;
+  padding: 8px 16px;
+}
+
+.btn:hover {
+  background-color: var(--secondary-color) !important;
+  color: var(--primary-color) !important;
+  border: 2px solid var(--primary-color) !important;
+  transform: translateY(-3px);
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  border-color: #dc3545;
+}
+
+.btn-danger:hover {
+  background-color: var(--secondary-color) !important;
+  color: #dc3545 !important;
+  border: 2px solid #dc3545 !important;
+}
+
+/* Secciones del perfil */
+.profile-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.profile-section {
+  flex: 1;
+  min-width: 300px;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.profile-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid white;
+  margin-right: 20px;
+  background-color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  color: white;
+}
+
+.profile-info h1 {
+  margin: 0;
+  color: var(--text-light);
+  font-size: 1.8rem;
+}
+
+.profile-info p {
+  margin: 5px 0 0;
+  color: var(--text-muted);
+}
+
+.profile-stats {
+  display: flex;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.stat-item {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 10px 15px;
+  border-radius: var(--border-radius);
+  text-align: center;
+  flex: 1;
+}
+
+.stat-item h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--text-light);
+}
+
+.stat-item p {
+  margin: 5px 0 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* Sección de pareja */
+.partner-section {
+  margin-top: 30px;
+}
+
+.partner-section h2 {
+  color: var(--text-light);
+  margin-bottom: 15px;
+  font-size: 1.5rem;
+}
+
+.partner-card {
+  padding: 20px;
+}
+
+.partner-card .form-control {
+  background-color: rgba(255, 255, 255, 0.9);
+  border: none;
+  padding: 10px 15px;
+  margin-bottom: 10px;
+}
+
+#usernameError {
+  color: #ff6b6b;
+  font-size: 0.8rem;
+  margin-bottom: 10px;
+}
+
+/* Sección de notificaciones */
+.notifications-section {
+  margin-top: 30px;
+  width: 100%;
+}
+
+.notifications-section h2 {
+  color: var(--text-light);
+  margin-bottom: 15px;
+  font-size: 1.5rem;
+}
+
+.notification-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.notification-card {
+  flex: 1;
+  min-width: 250px;
+  padding: 15px;
+}
+
+.notification-card .card-title {
+  font-size: 1.1rem;
+}
+
+/* Formulario de edición */
+.edit-form .form-group {
+  margin-bottom: 20px;
+}
+
+.edit-form label {
+  color: var(--text-light);
+  margin-bottom: 5px;
+  display: block;
+}
+
+.edit-form .form-control {
+  background-color: rgba(255, 255, 255, 0.9);
+  border: none;
+  padding: 10px 15px;
+}
+
+.edit-form .btn-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* Alertas */
+.alert {
+  border-radius: var(--border-radius);
+  margin-bottom: 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .profile-avatar {
+    margin-right: 0;
+    margin-bottom: 15px;
+  }
+
+  .profile-stats {
+    flex-direction: column;
+  }
+
+  .notification-card {
+    min-width: 100%;
+  }
+}
+
+/* Estilos para el modal */
+.modal-content {
+  background-color: var(--secondary-color);
+  color: var(--text-light);
+  border-radius: var(--border-radius);
+}
+
+.modal-header {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.modal-footer {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+.modal-title {
+  color: var(--text-light);
+}
+
+.close {
+  color: var(--text-light);
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Estilos para la sección de biografía */
+.bio-section {
+  margin-top: 20px;
+}
+
+.bio-content {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 15px;
+  border-radius: var(--border-radius);
+  color: var(--text-light);
+}
+
+/* Estilos para la sección de eliminación de cuenta */
+.danger-zone {
+  margin-top: 30px;
+  padding: 20px;
+  border: 1px dashed rgba(255, 255, 255, 0.3);
+  border-radius: var(--border-radius);
+}
+
+.danger-zone h3 {
+  color: #ff6b6b;
+  margin-bottom: 15px;
+}
+
+.danger-zone p {
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
