@@ -36,30 +36,13 @@ class ProfileController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'bio' => ['nullable', 'string', 'max:1000'],
-            'profile_image' => ['nullable', 'image', 'max:2048'],
         ]);
 
         // Preparar los datos para actualizar
         $dataToUpdate = [
             'name' => $validated['name'],
             'username' => $validated['username'],
-            'email' => $validated['email'],
-            'bio' => $validated['bio'] ?? $user->bio,
         ];
-
-        // Manejar la imagen de perfil si se proporciona
-        if ($request->hasFile('profile_image')) {
-            // Eliminar la imagen anterior si existe
-            if ($user->profile_image && Storage::disk('public')->exists($user->profile_image)) {
-                Storage::disk('public')->delete($user->profile_image);
-            }
-
-            // Guardar la nueva imagen
-            $path = $request->file('profile_image')->store('profile_images', 'public');
-            $dataToUpdate['profile_image'] = $path;
-        }
 
         // Actualizar la contraseña si se proporciona
         if ($request->filled('password')) {

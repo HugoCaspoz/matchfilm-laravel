@@ -28,27 +28,17 @@
                     <div class="card">
                         <div class="card-body">
                             <div class="profile-header">
-                                @if($user->profile_image)
-                                    <img src="{{ Storage::url($user->profile_image) }}" alt="{{ $user->name }}" class="profile-avatar">
-                                @else
-                                    <div class="profile-avatar profile-avatar-placeholder" data-username="{{ $user->name }}">
-                                        {{ substr($user->name, 0, 1) }}
-                                    </div>
-                                @endif
+                                <div class="profile-avatar profile-avatar-placeholder" data-username="{{ $user->name }}">
+                                    {{ substr($user->name, 0, 1) }}
+                                </div>
 
                                 <div class="profile-info">
                                     <h1>{{ $user->name }}</h1>
                                     <p>{{ '@' . $user->username }}</p>
+                                    <p class="text-muted">{{ $user->email }}</p>
                                     <a href="{{ route('profile.edit') }}" class="btn btn-primary mt-3">
                                         <i class="fas fa-edit me-2"></i>Editar Perfil
                                     </a>
-                                </div>
-                            </div>
-
-                            <div class="bio-section">
-                                <h3 class="mb-2">Biografía</h3>
-                                <div class="bio-content">
-                                    {{ $user->bio ?? 'No hay biografía disponible.' }}
                                 </div>
                             </div>
 

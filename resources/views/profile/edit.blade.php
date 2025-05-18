@@ -27,62 +27,30 @@
                 <div class="card-body">
                     <h3 class="card-title mb-4">Información Personal</h3>
 
-                    <form id="profile-edit-form" method="post" action="{{ route('profile.update') }}" class="edit-form" enctype="multipart/form-data">
+                    <form id="profile-edit-form" method="post" action="{{ route('profile.update') }}" class="edit-form">
                         @csrf
                         @method('put')
 
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="name">Nombre</label>
-                                    <input id="name" name="name" type="text" class="form-control @error('name') is-invalid @enderror" value="{{ old('name', $user->name) }}" required>
-                                    @error('name')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
+                        <div class="form-group mb-3">
+                            <label for="name">Nombre</label>
+                            <input id="name" name="name" type="text" class="form-control @error('name') is-invalid @enderror" value="{{ old('name', $user->name) }}" required>
+                            @error('name')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
 
-                                <div class="form-group mb-3">
-                                    <label for="username">Nombre de usuario</label>
-                                    <input id="username" name="username" type="text" class="form-control @error('username') is-invalid @enderror" value="{{ old('username', $user->username) }}" required>
-                                    @error('username')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
+                        <div class="form-group mb-3">
+                            <label for="username">Nombre de usuario</label>
+                            <input id="username" name="username" type="text" class="form-control @error('username') is-invalid @enderror" value="{{ old('username', $user->username) }}" required>
+                            @error('username')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
 
-                                <div class="form-group mb-3">
-                                    <label for="email">Correo electrónico</label>
-                                    <input id="email" name="email" type="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email', $user->email) }}" required>
-                                    @error('email')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="bio">Biografía</label>
-                                    <textarea id="bio" name="bio" rows="4" class="form-control @error('bio') is-invalid @enderror">{{ old('bio', $user->bio) }}</textarea>
-                                    @error('bio')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <div class="form-group mb-3">
-                                    <label for="profile_image">Imagen de perfil</label>
-                                    <input id="profile_image" name="profile_image" type="file" class="form-control @error('profile_image') is-invalid @enderror">
-                                    @error('profile_image')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-
-                                    <div class="mt-2">
-                                        @if($user->profile_image)
-                                            <img id="image-preview" src="{{ Storage::url($user->profile_image) }}" alt="Vista previa" class="img-thumbnail" style="max-height: 150px;">
-                                        @else
-                                            <img id="image-preview" src="#" alt="Vista previa" class="img-thumbnail" style="max-height: 150px; display: none;">
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="form-group mb-3">
+                            <label for="email">Correo electrónico</label>
+                            <input id="email" type="email" class="form-control" value="{{ $user->email }}" disabled readonly>
+                            <small class="form-text text-muted">El correo electrónico no se puede modificar</small>
                         </div>
 
                         <div class="form-group mb-3">
@@ -110,7 +78,7 @@
             <div class="card mt-4">
                 <div class="card-body danger-zone">
                     <h3>Zona de Peligro</h3>
-                    <p>Una vez que elimines tu cuenta, todos tus datos serán eliminados permanentemente. Antes de eliminar tu cuenta, por favor descarga cualquier dato que desees conservar.</p>
+                    <p>Una vez que elimines tu cuenta, todos tus datos serán eliminados permanentemente.</p>
 
                     <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
                         Eliminar mi cuenta

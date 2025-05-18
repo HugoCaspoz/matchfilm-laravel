@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
     tooltipTriggerList.map((tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl))
   }
 
-  // Mostrar la primera letra del nombre de usuario en el avatar si no hay imagen
+  // Mostrar la primera letra del nombre de usuario en el avatar
   const profileAvatar = document.querySelector(".profile-avatar-placeholder")
   if (profileAvatar) {
     const username = profileAvatar.getAttribute("data-username")
@@ -32,15 +32,6 @@ document.addEventListener("DOMContentLoaded", () => {
         clearInputError(usernameInput)
       }
 
-      // Validar email
-      const emailInput = document.getElementById("email")
-      if (emailInput && !isValidEmail(emailInput.value.trim())) {
-        showInputError(emailInput, "Por favor ingresa un email válido")
-        isValid = false
-      } else {
-        clearInputError(emailInput)
-      }
-
       // Validar contraseña si se ha ingresado
       const passwordInput = document.getElementById("password")
       const passwordConfirmInput = document.getElementById("password_confirmation")
@@ -58,47 +49,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      // Validar imagen de perfil
-      const profileImageInput = document.getElementById("profile_image")
-      if (profileImageInput && profileImageInput.files.length > 0) {
-        const file = profileImageInput.files[0]
-        const fileType = file.type
-        const validImageTypes = ["image/jpeg", "image/png", "image/gif"]
-
-        if (!validImageTypes.includes(fileType)) {
-          showInputError(profileImageInput, "Por favor selecciona una imagen válida (JPEG, PNG, GIF)")
-          isValid = false
-        } else if (file.size > 2 * 1024 * 1024) {
-          // 2MB
-          showInputError(profileImageInput, "La imagen no debe superar los 2MB")
-          isValid = false
-        } else {
-          clearInputError(profileImageInput)
-        }
-      }
-
       if (!isValid) {
         event.preventDefault()
         showFormError("Por favor corrige los errores en el formulario")
-      }
-    })
-  }
-
-  // Previsualización de imagen de perfil
-  const profileImageInput = document.getElementById("profile_image")
-  const imagePreview = document.getElementById("image-preview")
-
-  if (profileImageInput && imagePreview) {
-    profileImageInput.addEventListener("change", function () {
-      if (this.files && this.files[0]) {
-        const reader = new FileReader()
-
-        reader.onload = (e) => {
-          imagePreview.src = e.target.result
-          imagePreview.style.display = "block"
-        }
-
-        reader.readAsDataURL(this.files[0])
       }
     })
   }
@@ -159,11 +112,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function isValidEmail(email) {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return re.test(email)
-  }
-
   // Manejar notificaciones
   const markAsReadButtons = document.querySelectorAll(".mark-as-read")
   if (markAsReadButtons.length > 0) {
@@ -205,5 +153,84 @@ document.addEventListener("DOMContentLoaded", () => {
           .catch((error) => console.error("Error:", error))
       })
     })
+  }
+
+  // Funcionalidad para agregar amigo
+  const btnAgregarAmigo = document.getElementById("btnAgregarAmigo")
+  if (btnAgregarAmigo) {
+    btnAgregarAmigo.addEventListener("click", () => {
+      const nombreAmigo = document.getElementById("nombreAmigo").value.trim()
+      if (nombreAmigo.length >= 5) {
+        agregarAmigo(nombreAmigo)
+      } else {
+        const usernameError = document.getElementById("usernameError")
+        if (usernameError) {
+          usernameError.textContent = "El nombre de usuario debe tener al menos 5 letras."
+          usernameError.style.color = "red"
+        }
+      }
+    })
+  }
+
+  // Validación del nombre de amigo
+  const nombreAmigoInput = document.getElementById("nombreAmigo")
+  if (nombreAmigoInput) {
+    nombreAmigoInput.addEventListener("blur", function () {
+      const nombreAmigo = this.value.trim()
+      const usernameError = document.getElementById("usernameError")
+
+      if (nombreAmigo.length < 5) {
+        usernameError.textContent = "El nombre de usuario debe tener al menos 5 letras."
+        usernameError.style.color = "red"
+      } else {
+        usernameError.textContent = ""
+      }
+    })
+  }
+
+  function agregarAmigo(nombreAmigo) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+
+    fetch("/friends/request", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-TOKEN": csrfToken,
+      },
+      body: JSON.stringify({
+        friend_id: nombreAmigo,
+      }),
+    })
+      .then((response) => {
+        if (response.ok) {
+          return response.json()
+        }
+        return response.json().then((err) => {
+          throw new Error(err.message || "Error al agregar pareja")
+        })
+      })
+      .then((data) => {
+        const alertContainer = document.getElementById("alert-container")
+        if (alertContainer) {
+          alertContainer.innerHTML = `
+            <div class="alert alert-success alert-dismissible fade show text-center" role="alert">
+                <strong>Pareja agregada correctamente!</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>`
+        }
+        setTimeout(() => {
+          window.location.reload()
+        }, 2000)
+      })
+      .catch((error) => {
+        const alertContainer = document.getElementById("alert-container")
+        if (alertContainer) {
+          alertContainer.innerHTML = `
+            <div class="alert alert-danger alert-dismissible fade show text-center" role="alert">
+                <strong>${error.message}</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>`
+        }
+      })
   }
 })
