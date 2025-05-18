@@ -15,9 +15,13 @@ class MatchController extends Controller
 
     public function index()
     {
-        // Usar el método allMatches del modelo User para obtener todos los matches
-        $user = Auth::user();
-        $matches = $user->allMatches()->with('friend')->orderBy('created_at', 'desc')->get();
+        // Obtener todos los matches donde el usuario es el iniciador o el amigo
+        $userId = Auth::id();
+        $matches = FilmMatch::where('user_id_1', $userId)
+                      ->orWhere('friend_id', $userId)
+                      ->with(['user', 'friend'])
+                      ->orderBy('created_at', 'desc')
+                      ->get();
 
         return view('matches.index', compact('matches'));
     }
@@ -30,7 +34,7 @@ class MatchController extends Controller
                           $query->where('user_id_1', Auth::id())
                                 ->orWhere('friend_id', Auth::id());
                       })
-                      ->with('friend')
+                      ->with(['user', 'friend'])
                       ->firstOrFail();
 
         return view('matches.show', compact('match'));

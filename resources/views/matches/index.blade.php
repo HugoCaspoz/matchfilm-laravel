@@ -26,7 +26,7 @@
                                         @if($match->movie_poster)
                                             <img src="{{ $match->movie_poster }}" alt="{{ $match->movie_title }}" class="w-full h-full object-cover">
                                         @else
-                                            <div class="w-full h-full flex items-center justify-center bg-gray-200">
+                                            <div class="w-full h-full flex items-center justify-content-center bg-gray-200">
                                                 <i class="fas fa-film text-4xl text-gray-400"></i>
                                             </div>
                                         @endif
@@ -37,7 +37,12 @@
                                     <div class="p-4">
                                         <h3 class="font-bold text-lg mb-2 truncate">{{ $match->movie_title }}</h3>
                                         <p class="text-gray-600 mb-4">
-                                            <i class="fas fa-user mr-1"></i> Match con {{ $match->friend->name }}
+                                            <i class="fas fa-user mr-1"></i>
+                                            @if($match->user_id_1 == Auth::id())
+                                                Match con {{ $match->friend->name ?? $match->friend->username ?? 'Usuario' }}
+                                            @else
+                                                Match con {{ $match->user->name ?? $match->user->username ?? 'Usuario' }}
+                                            @endif
                                         </p>
                                         <p class="text-gray-500 text-sm">
                                             <i class="fas fa-calendar-alt mr-1"></i> {{ $match->created_at->format('d/m/Y') }}
