@@ -183,9 +183,15 @@ class MovieController extends Controller
             // Como no tenemos una relación de amigos directa, usamos la tabla friends
             // Esto debe adaptarse según cómo manejes las amistades en tu aplicación
             $friends = DB::table('friends')
-                        ->where('user_id', $userId)
+                        ->where(function($query) use ($user) {
+                            $query->where('user_id', $user->id)
+                                  ->orWhere('friend_id', $user->id);
+                        })
                         ->where('status', 'accepted')
-                        ->pluck('friend_id')
+                        ->get()
+                        ->map(function($friend) use ($user) {
+                            return $friend->user_id == $user->id ? $friend->friend_id : $friend->user_id;
+                        })
                         ->toArray();
 
             // Buscar si algún amigo ha dado like a la misma película

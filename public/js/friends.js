@@ -1,41 +1,103 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // Animación para botones
-  const buttons = document.querySelectorAll(".btn")
-  buttons.forEach((button) => {
-    button.addEventListener("mouseenter", function () {
-      this.style.transform = "translateY(-3px)"
-    })
-    button.addEventListener("mouseleave", function () {
-      this.style.transform = "translateY(0)"
-    })
-  })
+  // Validación del nombre de amigo
+  const nombreAmigoInput = document.getElementById("nombreAmigo")
+  if (nombreAmigoInput) {
+    nombreAmigoInput.addEventListener("blur", function () {
+      const nombreAmigo = this.value.trim()
+      const usernameError = document.getElementById("usernameError")
 
-  // Notificaciones temporales
-  const alerts = document.querySelectorAll(".alert")
-  const bootstrap = window.bootstrap // Declare the bootstrap variable
-  if (typeof bootstrap !== "undefined") {
-    alerts.forEach((alert) => {
-      setTimeout(() => {
-        const bsAlert = new bootstrap.Alert(alert)
-        bsAlert.close()
-      }, 5000)
+      if (nombreAmigo.length < 5) {
+        usernameError.innerHTML = "El nombre de usuario debe tener al menos 5 letras."
+      } else {
+        usernameError.innerHTML = ""
+      }
     })
   }
 
-  // Búsqueda en tiempo real (opcional)
-  const searchInput = document.querySelector('input[name="query"]')
-  if (searchInput) {
-    let typingTimer
-    const doneTypingInterval = 1000 // 1 segundo
-
-    searchInput.addEventListener("keyup", function () {
-      clearTimeout(typingTimer)
-      if (this.value && this.value.length >= 3) {
-        // Solo buscar si hay al menos 3 caracteres
-        typingTimer = setTimeout(() => {
-          document.querySelector('form[action*="friends/search"]').submit()
-        }, doneTypingInterval)
+  // Botón para agregar amigo
+  const btnAgregarAmigo = document.getElementById("btnAgregarAmigo")
+  if (btnAgregarAmigo) {
+    btnAgregarAmigo.addEventListener("click", () => {
+      const nombreAmigo = document.getElementById("nombreAmigo").value.trim()
+      if (nombreAmigo.length >= 5) {
+        agregarAmigo(nombreAmigo)
       }
     })
   }
 })
+
+// Función para agregar amigo directamente (sin solicitud)
+function agregarAmigo(nombreAmigo) {
+  const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+
+  fetch("/friends/request", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-TOKEN": csrfToken,
+    },
+    body: JSON.stringify({
+      friend_id: nombreAmigo,
+    }),
+  })
+    .then((response) => {
+      if (response.ok) {
+        return response.json()
+      }
+      return response.json().then((err) => {
+        throw new Error(err.message || "Error al agregar pareja")
+      })
+    })
+    .then((data) => {
+      document.getElementById("alert").innerHTML = `
+          <div class="alert alert-success alert-dismissible fade show text-center" role="alert">
+              <strong>Pareja agregada correctamente!</strong>
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>`
+      setTimeout(() => {
+        window.location.reload()
+      }, 2000)
+    })
+    .catch((error) => {
+      document.getElementById("alert").innerHTML = `
+          <div class="alert alert-danger alert-dismissible fade show text-center" role="alert">
+              <strong>${error.message}</strong>
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>`
+    })
+}
+
+// Función para eliminar amigo
+function eliminarAmigo(friendId) {
+  if (confirm("¿Estás seguro de que quieres eliminar a esta pareja?")) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+
+    fetch(`/friends/remove/${friendId}`, {
+      method: "DELETE",
+      headers: {
+        "X-CSRF-TOKEN": csrfToken,
+      },
+    })
+      .then((response) => {
+        if (response.ok) {
+          document.getElementById("alert").innerHTML = `
+                  <div class="alert alert-success alert-dismissible fade show text-center" role="alert">
+                      <strong>Pareja eliminada correctamente!</strong>
+                      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                  </div>`
+          setTimeout(() => {
+            window.location.reload()
+          }, 2000)
+        } else {
+          throw new Error("Error al eliminar la pareja")
+        }
+      })
+      .catch((error) => {
+        document.getElementById("alert").innerHTML = `
+              <div class="alert alert-danger alert-dismissible fade show text-center" role="alert">
+                  <strong>Error al eliminar la pareja!</strong>
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>`
+      })
+  }
+}

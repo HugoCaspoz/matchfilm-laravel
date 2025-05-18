@@ -25,6 +25,7 @@ class Notification extends Model
      */
     protected $casts = [
         'read' => 'boolean',
+        'data' => 'array',
     ];
 
     /**

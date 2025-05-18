@@ -20,6 +20,7 @@
         <!-- Estilos personalizados -->
         <link rel="stylesheet" href="{{ route('serve.css', 'header.css') }}">
         <link rel="stylesheet" href="{{ route('serve.css', 'app.css') }}">
+        <link rel="stylesheet" href="{{ route('serve.css', 'friends.css') }}">
 
         <!-- Additional Styles -->
         @stack('styles')
@@ -52,6 +53,12 @@
         <!-- Scripts personalizados -->
         <script src="{{ route('serve.js', 'header.js') }}"></script>
         <script src="{{ route('serve.js', 'app.js') }}"></script>
+        <script src="{{ route('serve.js', 'friends.js') }}"></script>
+
+        <!-- Página de búsqueda -->
+        @if(request()->routeIs('friends.search'))
+        <script src="{{ route('serve.js', 'search.js') }}"></script>
+        @endif
 
         <!-- Additional Scripts -->
         @stack('scripts')

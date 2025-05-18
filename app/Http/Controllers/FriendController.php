@@ -146,6 +146,7 @@ class FriendController extends Controller
                 'type' => 'friend_accepted',
                 'message' => Auth::user()->username . ' te ha agregado como pareja.',
                 'read' => false,
+                'data' => json_encode([]),
             ]);
 
             return response()->json([
