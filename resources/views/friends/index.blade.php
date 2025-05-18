@@ -62,13 +62,13 @@
                     <div class="card-body">
                         <h3 class="card-title mb-4">Notificaciones</h3>
                         <div id="notificaciones">
-                            @if($notifications->isEmpty())
+                            @if(!isset($notifications) || $notifications->isEmpty())
                                 <p class="text-white-50 text-center">No tienes notificaciones</p>
                             @else
                                 @foreach($notifications as $notification)
                                     <div class="card mb-3" style="background-color: rgba(255, 255, 255, 0.1);">
                                         <div class="card-body">
-                                            <h5 class="card-title"><b>{{ $notification->fromUser->username ?? $notification->fromUser->name }}</b></h5>
+                                            <h5 class="card-title"><b>{{ $notification->fromUser->username ?? $notification->fromUser->name ?? 'Usuario' }}</b></h5>
                                             <p class="card-text">{{ $notification->message }}</p>
                                             <form action="{{ route('notifications.read', $notification->id) }}" method="POST">
                                                 @csrf
