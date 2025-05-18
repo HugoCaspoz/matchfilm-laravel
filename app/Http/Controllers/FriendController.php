@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class FriendController extends Controller
 {
@@ -18,12 +19,13 @@ class FriendController extends Controller
 
     public function index()
     {
-        // Obtener amigos aceptados
+        // Obtener amigos aceptados (limitado a 1 para el concepto de "pareja")
         $friends = DB::table('friends')
                     ->where('user_id', Auth::id())
                     ->where('status', 'accepted')
                     ->join('users', 'users.id', '=', 'friends.friend_id')
                     ->select('users.*', 'friends.id as friendship_id')
+                    ->limit(1) // Limitamos a 1 para el concepto de "pareja"
                     ->get();
 
         // Solicitudes pendientes enviadas
@@ -51,9 +53,13 @@ class FriendController extends Controller
         $results = [];
 
         if ($query) {
-            $results = User::where('username', 'like', "%{$query}%")
-                          ->where('id', '!=', Auth::id())
-                          ->get();
+            // Primero intentamos buscar por username
+            $results = User::where(function($q) use ($query) {
+                            $q->where('username', 'like', "%{$query}%")
+                              ->orWhere('name', 'like', "%{$query}%");
+                        })
+                        ->where('id', '!=', Auth::id())
+                        ->get();
         }
 
         return view('friends.search', compact('results', 'query'));
@@ -61,128 +67,161 @@ class FriendController extends Controller
 
     public function sendRequest(Request $request)
     {
-        $request->validate([
-            'friend_id' => 'required|exists:users,id',
-        ]);
+        try {
+            // Validar si se envía un ID o un nombre de usuario
+            if (is_numeric($request->friend_id)) {
+                $friendId = $request->friend_id;
+                $friend = User::findOrFail($friendId);
+            } else {
+                // Buscar por nombre de usuario
+                $username = $request->friend_id;
+                $friend = User::where('username', $username)->orWhere('name', $username)->firstOrFail();
+                $friendId = $friend->id;
+            }
 
-        $userId = Auth::id();
-        $friendId = $request->friend_id;
+            $userId = Auth::id();
 
-        // Verificar que no exista ya una solicitud
-        $existingRequest = DB::table('friends')
-                            ->where(function($query) use ($userId, $friendId) {
-                                $query->where('user_id', $userId)
-                                      ->where('friend_id', $friendId);
-                            })
-                            ->orWhere(function($query) use ($userId, $friendId) {
-                                $query->where('user_id', $friendId)
-                                      ->where('friend_id', $userId);
-                            })
-                            ->first();
+            // Verificar si ya existe una relación de amistad
+            $existingFriendship = Friend::where(function($query) use ($userId, $friendId) {
+                                    $query->where('user_id', $userId)
+                                          ->where('friend_id', $friendId);
+                                })
+                                ->orWhere(function($query) use ($userId, $friendId) {
+                                    $query->where('user_id', $friendId)
+                                          ->where('friend_id', $userId);
+                                })
+                                ->first();
 
-        if ($existingRequest) {
-            return redirect()->back()->with('error', 'Ya existe una solicitud de amistad con este usuario.');
+            if ($existingFriendship) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ya existe una solicitud de amistad con este usuario.'
+                ], 400);
+            }
+
+            // Verificar si el usuario ya tiene una pareja
+            $existingPartner = Friend::where('user_id', $userId)
+                                    ->where('status', 'accepted')
+                                    ->first();
+
+            if ($existingPartner) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ya tienes una pareja, no puedes agregar más.'
+                ], 400);
+            }
+
+            // Crear solicitud
+            $friendship = Friend::create([
+                'user_id' => $userId,
+                'friend_id' => $friendId,
+                'status' => 'pending'
+            ]);
+
+            // Crear notificación
+            Notification::create([
+                'user_id' => $friendId,
+                'from_user_id' => $userId,
+                'type' => 'friend_request',
+                'message' => Auth::user()->username . ' te ha enviado una solicitud de amistad.',
+                'read' => false,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Solicitud de amistad enviada correctamente.'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error al enviar solicitud de amistad: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al enviar la solicitud de amistad: ' . $e->getMessage()
+            ], 500);
         }
-
-        // Crear solicitud
-        DB::table('friends')->insert([
-            'user_id' => $userId,
-            'friend_id' => $friendId,
-            'status' => 'pending',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        // Crear notificación
-        Notification::create([
-            'user_id' => $friendId,
-            'from_user_id' => $userId,
-            'type' => 'friend_request',
-            'message' => Auth::user()->username . ' te ha enviado una solicitud de amistad.',
-            'read' => false,
-        ]);
-
-        return redirect()->back()->with('success', 'Solicitud de amistad enviada.');
     }
 
     public function acceptRequest($id)
     {
-        $friendRequest = DB::table('friends')
-                        ->where('id', $id)
-                        ->where('friend_id', Auth::id())
-                        ->where('status', 'pending')
-                        ->first();
+        try {
+            $friendRequest = Friend::where('id', $id)
+                            ->where('friend_id', Auth::id())
+                            ->where('status', 'pending')
+                            ->firstOrFail();
 
-        if (!$friendRequest) {
-            return redirect()->back()->with('error', 'Solicitud de amistad no encontrada.');
-        }
+            // Verificar si el usuario ya tiene una pareja
+            $existingPartner = Friend::where('user_id', Auth::id())
+                                    ->where('status', 'accepted')
+                                    ->first();
 
-        // Actualizar estado
-        DB::table('friends')
-            ->where('id', $id)
-            ->update([
+            if ($existingPartner) {
+                return redirect()->back()->with('error', 'Ya tienes una pareja, no puedes aceptar más solicitudes.');
+            }
+
+            // Actualizar estado
+            $friendRequest->status = 'accepted';
+            $friendRequest->save();
+
+            // Crear relación recíproca
+            Friend::create([
+                'user_id' => Auth::id(),
+                'friend_id' => $friendRequest->user_id,
                 'status' => 'accepted',
-                'updated_at' => now()
             ]);
 
-        // Crear relación recíproca
-        DB::table('friends')->insert([
-            'user_id' => Auth::id(),
-            'friend_id' => $friendRequest->user_id,
-            'status' => 'accepted',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+            // Crear notificación
+            Notification::create([
+                'user_id' => $friendRequest->user_id,
+                'from_user_id' => Auth::id(),
+                'type' => 'friend_accepted',
+                'message' => Auth::user()->username . ' ha aceptado tu solicitud de amistad.',
+                'read' => false,
+            ]);
 
-        // Crear notificación
-        Notification::create([
-            'user_id' => $friendRequest->user_id,
-            'from_user_id' => Auth::id(),
-            'type' => 'friend_accepted',
-            'message' => Auth::user()->username . ' ha aceptado tu solicitud de amistad.',
-            'read' => false,
-        ]);
-
-        return redirect()->back()->with('success', 'Solicitud de amistad aceptada.');
+            return redirect()->back()->with('success', 'Solicitud de amistad aceptada.');
+        } catch (\Exception $e) {
+            Log::error('Error al aceptar solicitud de amistad: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error al aceptar la solicitud de amistad.');
+        }
     }
 
     public function rejectRequest($id)
     {
-        $friendRequest = DB::table('friends')
-                        ->where('id', $id)
-                        ->where('friend_id', Auth::id())
-                        ->where('status', 'pending')
-                        ->first();
+        try {
+            $friendRequest = Friend::where('id', $id)
+                            ->where('friend_id', Auth::id())
+                            ->where('status', 'pending')
+                            ->firstOrFail();
 
-        if (!$friendRequest) {
-            return redirect()->back()->with('error', 'Solicitud de amistad no encontrada.');
+            // Actualizar estado
+            $friendRequest->status = 'rejected';
+            $friendRequest->save();
+
+            return redirect()->back()->with('success', 'Solicitud de amistad rechazada.');
+        } catch (\Exception $e) {
+            Log::error('Error al rechazar solicitud de amistad: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error al rechazar la solicitud de amistad.');
         }
-
-        // Actualizar estado
-        DB::table('friends')
-            ->where('id', $id)
-            ->update([
-                'status' => 'rejected',
-                'updated_at' => now()
-            ]);
-
-        return redirect()->back()->with('success', 'Solicitud de amistad rechazada.');
     }
 
     public function removeFriend($id)
     {
-        // Eliminar relación en ambas direcciones
-        DB::table('friends')
-            ->where(function($query) use ($id) {
-                $query->where('user_id', Auth::id())
-                      ->where('friend_id', $id);
-            })
-            ->orWhere(function($query) use ($id) {
-                $query->where('user_id', $id)
-                      ->where('friend_id', Auth::id());
-            })
-            ->delete();
+        try {
+            // Eliminar relación en ambas direcciones
+            Friend::where(function($query) use ($id) {
+                    $query->where('user_id', Auth::id())
+                          ->where('friend_id', $id);
+                })
+                ->orWhere(function($query) use ($id) {
+                    $query->where('user_id', $id)
+                          ->where('friend_id', Auth::id());
+                })
+                ->delete();
 
-        return redirect()->back()->with('success', 'Amigo eliminado.');
+            return redirect()->back()->with('success', 'Amigo eliminado.');
+        } catch (\Exception $e) {
+            Log::error('Error al eliminar amigo: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error al eliminar el amigo.');
+        }
     }
 }

@@ -28,7 +28,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/movies/{id}/rate', [MovieController::class, 'rate'])->name('movies.rate');
     Route::post('/movies/{id}/watchlist', [MovieController::class, 'addToWatchlist'])->name('movies.add_to_watchlist');
 
-    // Likes y dislikes (añadidos aquí)
+    // Likes y dislikes
     Route::post('/movies/{id}/like', [MovieController::class, 'like'])->name('movies.like');
     Route::post('/movies/{id}/dislike', [MovieController::class, 'dislike'])->name('movies.dislike');
 
@@ -46,15 +46,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/messages/{user}', [MessageController::class, 'show'])->name('messages.show');
     Route::post('/messages/{user}', [MessageController::class, 'store'])->name('messages.store');
 
-    // Amigos (nuevas rutas)
+    // Amigos (pareja)
     Route::get('/friends', [FriendController::class, 'index'])->name('friends.index');
     Route::get('/friends/search', [FriendController::class, 'search'])->name('friends.search');
     Route::post('/friends/request', [FriendController::class, 'sendRequest'])->name('friends.request');
-    Route::post('/friends/accept/{id}', [FriendController::class, 'acceptRequest'])->name('friends.accept');
-    Route::post('/friends/reject/{id}', [FriendController::class, 'rejectRequest'])->name('friends.reject');
     Route::delete('/friends/remove/{id}', [FriendController::class, 'removeFriend'])->name('friends.remove');
+    Route::get('/friends/matches/{id}', [FriendController::class, 'getMatches'])->name('friends.matches');
 
-    // Notificaciones (nuevas rutas)
+    // Notificaciones
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/read/{id}', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read.all');
