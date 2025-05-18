@@ -44,9 +44,11 @@
                                                 Match con {{ $match->user->name ?? $match->user->username ?? 'Usuario' }}
                                             @endif
                                         </p>
-                                        <p class="text-gray-500 text-sm">
-                                            <i class="fas fa-calendar-alt mr-1"></i> {{ $match->created_at->format('d/m/Y') }}
-                                        </p>
+                                        @if(isset($match->matched_at))
+                                            <p class="text-gray-500 text-sm">
+                                                <i class="fas fa-calendar-alt mr-1"></i> {{ $match->matched_at->format('d/m/Y') }}
+                                            </p>
+                                        @endif
                                     </div>
                                 </div>
                             @endforeach

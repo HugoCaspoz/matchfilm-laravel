@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\FilmMatch;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class MatchController extends Controller
 {
@@ -17,11 +18,26 @@ class MatchController extends Controller
     {
         // Obtener todos los matches donde el usuario es el iniciador o el amigo
         $userId = Auth::id();
-        $matches = FilmMatch::where('user_id_1', $userId)
+
+        // Primero, verifiquemos qué columnas tiene la tabla matches
+        $columns = DB::getSchemaBuilder()->getColumnListing('matches');
+
+        $query = FilmMatch::where('user_id_1', $userId)
                       ->orWhere('friend_id', $userId)
-                      ->with(['user', 'friend'])
-                      ->orderBy('created_at', 'desc')
-                      ->get();
+                      ->with(['user', 'friend']);
+
+        // Ordenar por id si no existe created_at
+        if (!in_array('created_at', $columns)) {
+            if (in_array('matched_at', $columns)) {
+                $query->orderBy('matched_at', 'desc');
+            } else {
+                $query->orderBy('id', 'desc');
+            }
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
+
+        $matches = $query->get();
 
         return view('matches.index', compact('matches'));
     }

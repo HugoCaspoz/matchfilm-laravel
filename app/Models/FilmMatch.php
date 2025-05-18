@@ -9,34 +9,57 @@ class FilmMatch extends Model
 {
     use HasFactory;
 
-    protected $table = 'matches'; // Mantiene el nombre de la tabla como 'matches'
-    
+    /**
+     * La tabla asociada con el modelo.
+     *
+     * @var string
+     */
+    protected $table = 'matches';
+
+    /**
+     * Indica si el modelo debe tener timestamps.
+     *
+     * @var bool
+     */
+    public $timestamps = false;
+
+    /**
+     * Los atributos que son asignables en masa.
+     *
+     * @var array<int, string>
+     */
     protected $fillable = [
         'user_id_1',
-        'user_id_2',
+        'friend_id',
         'tmdb_id',
+        'movie_title',
+        'movie_poster',
         'status',
         'matched_at'
     ];
 
+    /**
+     * Los atributos que deben convertirse a tipos nativos.
+     *
+     * @var array
+     */
     protected $casts = [
         'matched_at' => 'datetime',
     ];
 
-    // Relaciones
-    public function userOne()
+    /**
+     * Obtener el usuario que inició el match.
+     */
+    public function user()
     {
         return $this->belongsTo(User::class, 'user_id_1');
     }
 
-    public function userTwo()
+    /**
+     * Obtener el amigo que hizo match con el usuario.
+     */
+    public function friend()
     {
-        return $this->belongsTo(User::class, 'user_id_2');
-    }
-
-    // Método para obtener el otro usuario del match
-    public function getOtherUser($userId)
-    {
-        return $this->user_id_1 == $userId ? $this->userTwo : $this->userOne;
+        return $this->belongsTo(User::class, 'friend_id');
     }
 }
