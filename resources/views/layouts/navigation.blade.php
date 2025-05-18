@@ -16,8 +16,13 @@
             </a>
 
             @auth
-            <a href="{{ route('matches.index') }}" class="nav-link {{ request()->routeIs('matches.index') ? 'active' : '' }}">
+            <a href="{{ route('favorites.index') }}" class="nav-link {{ request()->routeIs('favorites.*') ? 'active' : '' }}">
                 <i class="fas fa-heart"></i>
+                <span class="nav-text">Favoritas</span>
+            </a>
+
+            <a href="{{ route('matches.index') }}" class="nav-link {{ request()->routeIs('matches.index') ? 'active' : '' }}">
+                <i class="fas fa-star"></i>
                 <span class="nav-text">Matches</span>
             </a>
 

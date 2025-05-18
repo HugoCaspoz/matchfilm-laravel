@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\FriendController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MatchController;
@@ -32,6 +33,11 @@ Route::middleware(['auth'])->group(function () {
     // Likes y dislikes
     Route::post('/movies/{id}/like', [MovieController::class, 'like'])->name('movies.like');
     Route::post('/movies/{id}/dislike', [MovieController::class, 'dislike'])->name('movies.dislike');
+
+    // Favoritos
+    Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
+    Route::get('/favorites/search', [FavoriteController::class, 'search'])->name('favorites.search');
+    Route::post('/favorites/{id}', [FavoriteController::class, 'toggleFavorite'])->name('favorites.toggle');
 
     // Listas de películas
     Route::resource('watchlists', WatchlistController::class);
