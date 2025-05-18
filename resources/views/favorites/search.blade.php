@@ -83,7 +83,15 @@
                                     <div class="movie-info">
                                         <h3>{{ $movie['title'] }}</h3>
                                         @if(isset($movie['vote_average']))
-                                            <span class="{{ getColor($movie['vote_average']) }}">{{ number_format($movie['vote_average'], 1) }}</span>
+                                            @php
+                                                $colorClass = "red";
+                                                if ($movie['vote_average'] >= 7.5) {
+                                                    $colorClass = "green";
+                                                } elseif ($movie['vote_average'] >= 5) {
+                                                    $colorClass = "orange";
+                                                }
+                                            @endphp
+                                            <span class="{{ $colorClass }}">{{ number_format($movie['vote_average'], 1) }}</span>
                                         @endif
                                     </div>
                                     <div class="movie-overview">
@@ -106,17 +114,5 @@
 
     @push('scripts')
     <script src="{{ asset('js/favorites.js') }}"></script>
-    <script>
-        // Función para determinar el color según la calificación
-        function getColor(vote) {
-            if (vote >= 7.5) {
-                return "green";
-            } else if (vote >= 5) {
-                return "orange";
-            } else {
-                return "red";
-            }
-        }
-    </script>
     @endpush
 </x-app-layout>
