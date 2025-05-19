@@ -17,13 +17,13 @@ function agregarAmigo(userId) {
         return response.json()
       }
       return response.json().then((err) => {
-        throw new Error(err.message || "Error al agregar pareja")
+        throw new Error(err.message || "Error al agregar amigo")
       })
     })
     .then((data) => {
       document.getElementById("alert").innerHTML = `
           <div class="alert alert-success alert-dismissible fade show text-center" role="alert">
-              <strong>Pareja agregada correctamente!</strong>
+              <strong>amigo agregada correctamente!</strong>
               <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
           </div>`
       setTimeout(() => {

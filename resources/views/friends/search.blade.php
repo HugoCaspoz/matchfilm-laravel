@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="d-flex justify-content-between align-items-center">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Buscar Pareja') }}
+                {{ __('Buscar amigo') }}
             </h2>
             <a href="{{ route('friends.index') }}" class="btn btn-outline-light">
                 <i class="fas fa-arrow-left me-2"></i> Volver
@@ -64,7 +64,7 @@
                                                     </div>
                                                 </div>
                                                 @if(isset($user->is_friend) && $user->is_friend)
-                                                    <span class="badge bg-success">Ya es tu pareja</span>
+                                                    <span class="badge bg-success">Ya es tu amigo</span>
                                                 @else
                                                     <button type="button" onclick="agregarAmigo('{{ $user->id }}')" class="btn" style="background-color: #ab9079; color: white;">
                                                         <i class="fas fa-user-plus me-1"></i> Agregar

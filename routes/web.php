@@ -53,7 +53,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/messages/{user}', [MessageController::class, 'show'])->name('messages.show');
     Route::post('/messages/{user}', [MessageController::class, 'store'])->name('messages.store');
     
-    // Amigos (pareja)
+    // Amigos (amigo)
     Route::get('/friends', [FriendController::class, 'index'])->name('friends.index');
     Route::get('/friends/search', [FriendController::class, 'search'])->name('friends.search');
     Route::post('/friends/request', [FriendController::class, 'sendRequest'])->name('friends.request');

@@ -62,7 +62,7 @@
 
                 <div class="profile-section">
                     <div class="partner-section">
-                        <h2>Mi Pareja</h2>
+                        <h2>Mis Amigos</h2>
                         <div class="card partner-card">
                             <div id="amigo">
                                 @php
@@ -70,17 +70,17 @@
                                 @endphp
 
                                 @if($friends->isEmpty())
-                                    <h5 class="card-title">No tienes pareja</h5>
+                                    <h5 class="card-title">No tienes amigo</h5>
                                     <input type="text" id="nombreAmigo" class="form-control" placeholder="Nombre de usuario">
                                     <p id="usernameError"></p>
-                                    <button type="button" id="btnAgregarAmigo" class="btn btn-primary">Agrega a tu pareja</button>
+                                    <button type="button" id="btnAgregarAmigo" class="btn btn-primary">Agrega a tu amigo</button>
                                 @else
                                     @foreach($friends as $friend)
                                         <h5 class="card-title"><b>{{ $friend->username ?? $friend->name }}</b></h5>
                                         <form action="{{ route('friends.remove', $friend->id) }}" method="POST">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-danger">Eliminar Pareja</button>
+                                            <button type="submit" class="btn btn-danger">Eliminar Amigo</button>
                                         </form>
                                     @endforeach
                                 @endif

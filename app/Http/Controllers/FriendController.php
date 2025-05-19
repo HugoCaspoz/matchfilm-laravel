@@ -22,7 +22,7 @@ class FriendController extends Controller
         // Obtener el usuario actual
         $user = Auth::user();
 
-        // Obtener amigos (pareja) - buscar en ambas direcciones
+        // Obtener amigos (amigos) - buscar en ambas direcciones
         $friends = DB::table('friends')
                     ->where(function($query) use ($user) {
                         $query->where('user_id', $user->id)
@@ -117,7 +117,7 @@ class FriendController extends Controller
                 ], 400);
             }
 
-            // Verificar si el usuario ya tiene una pareja
+            // Verificar si el usuario ya tiene un amigo
             $existingPartner = Friend::where(function($query) use ($userId) {
                                     $query->where('user_id', $userId)
                                           ->orWhere('friend_id', $userId);
@@ -128,7 +128,7 @@ class FriendController extends Controller
             if ($existingPartner) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Ya tienes una pareja, no puedes agregar más.'
+                    'message' => 'Ya tienes una amigo, no puedes agregar más.'
                 ], 400);
             }
 
@@ -144,21 +144,21 @@ class FriendController extends Controller
                 'user_id' => $friendId,
                 'from_user_id' => $userId,
                 'type' => 'friend_accepted',
-                'message' => Auth::user()->username . ' te ha agregado como pareja.',
+                'message' => Auth::user()->username . ' te ha agregado como amigo.',
                 'read' => false,
                 'data' => json_encode([]),
             ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Pareja agregada correctamente.'
+                'message' => 'amigo agregada correctamente.'
             ]);
         } catch (\Exception $e) {
-            Log::error('Error al agregar pareja: ' . $e->getMessage());
+            Log::error('Error al agregar amigo: ' . $e->getMessage());
 
             return response()->json([
                 'success' => false,
-                'message' => 'Error al agregar pareja: ' . $e->getMessage()
+                'message' => 'Error al agregar amigo: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -181,10 +181,10 @@ class FriendController extends Controller
                 })
                 ->delete();
 
-            return redirect()->back()->with('success', 'Pareja eliminada correctamente.');
+            return redirect()->back()->with('success', 'amigo eliminada correctamente.');
         } catch (\Exception $e) {
-            Log::error('Error al eliminar pareja: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Error al eliminar la pareja.');
+            Log::error('Error al eliminar amigo: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error al eliminar la amigo.');
         }
     }
 

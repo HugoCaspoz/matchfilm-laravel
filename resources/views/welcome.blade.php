@@ -105,7 +105,7 @@
                             <span class="step-number">1</span>
                         </div>
                         <h3>Agrega a tu amigo</h3>
-                        <p>Invita a tu pareja o amigo a unirse a MatchFilm y conéctense para comenzar a descubrir películas juntos.</p>
+                        <p>Invita a tu amigo o amigo a unirse a MatchFilm y conéctense para comenzar a descubrir películas juntos.</p>
                     </div>
                 </div>
                 <div class="col-md-4">
@@ -214,7 +214,7 @@
                             <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Usuario" class="img-fluid rounded-circle">
                         </div>
                         <div class="testimonial-content">
-                            <p>"La interfaz es súper intuitiva y el catálogo de películas es enorme. Me encanta recibir notificaciones cuando hay un match con mi pareja."</p>
+                            <p>"La interfaz es súper intuitiva y el catálogo de películas es enorme. Me encanta recibir notificaciones cuando hay un match con mi amigo."</p>
                             <div class="testimonial-name">Ana P.</div>
                         </div>
                     </div>
@@ -251,7 +251,7 @@
             <div class="row">
                 <div class="col-lg-4 mb-4 mb-lg-0">
                     <h5><i class="fas fa-film me-2"></i>MatchFilm</h5>
-                    <p>Encuentra la película perfecta para ver con tus amigos y pareja. Nunca más discutas sobre qué película elegir.</p>
+                    <p>Encuentra la película perfecta para ver con tus amigos y amigo. Nunca más discutas sobre qué película elegir.</p>
                 </div>
                 <div class="col-lg-2 col-md-4 mb-4 mb-md-0">
                     <h5>Enlaces</h5>
