@@ -78,9 +78,6 @@
                         @endguest
                     </div>
                 </div>
-                <div class="col-lg-6 hero-image">
-                    <img src="https://source.unsplash.com/random/600x500/?friends,movies" alt="Amigos viendo películas" class="img-fluid">
-                </div>
             </div>
         </div>
         <div class="hero-wave">
@@ -140,9 +137,6 @@
                 <p class="lead">MatchFilm te ofrece una experiencia única para compartir el cine</p>
             </div>
             <div class="row align-items-center feature-row">
-                <div class="col-lg-6 feature-image">
-                    <img src="https://source.unsplash.com/random/500x400/?movies,catalog" alt="Catálogo de películas" class="img-fluid rounded-3 shadow">
-                </div>
                 <div class="col-lg-6 feature-text">
                     <div class="feature-icon">
                         <i class="fas fa-film"></i>
@@ -159,14 +153,8 @@
                     <h3>Algoritmo de coincidencia inteligente</h3>
                     <p>Nuestro sistema analiza tus gustos y los de tu amigo para encontrar las películas perfectas que ambos disfrutarán. Cuanto más uses MatchFilm, mejores serán las recomendaciones.</p>
                 </div>
-                <div class="col-lg-6 feature-image">
-                    <img src="https://source.unsplash.com/random/500x400/?algorithm,data" alt="Algoritmo de coincidencia" class="img-fluid rounded-3 shadow">
-                </div>
             </div>
             <div class="row align-items-center feature-row">
-                <div class="col-lg-6 feature-image">
-                    <img src="https://source.unsplash.com/random/500x400/?friends,celebration" alt="Celebración de match" class="img-fluid rounded-3 shadow">
-                </div>
                 <div class="col-lg-6 feature-text">
                     <div class="feature-icon">
                         <i class="fas fa-heart"></i>
