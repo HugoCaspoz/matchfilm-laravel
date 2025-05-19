@@ -11,6 +11,7 @@
 
 body {
   background-color: var(--background-color) !important;
+  padding-top: 80px; /* Añadir padding-top para evitar que el contenido quede debajo del header */
 }
 
 /* Selector de amigos */
@@ -161,4 +162,8 @@ body {
     flex-direction: column;
     gap: 10px;
   }
+}
+
+.py-12 {
+  padding-top: 1rem !important; /* Reducir el padding superior ya que tenemos padding en el body */
 }
