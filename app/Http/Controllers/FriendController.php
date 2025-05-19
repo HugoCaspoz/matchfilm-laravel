@@ -117,21 +117,6 @@ class FriendController extends Controller
                 ], 400);
             }
 
-            // Verificar si el usuario ya tiene una pareja aceptada
-            $existingPartner = Friend::where(function($query) use ($userId) {
-                                    $query->where('user_id', $userId)
-                                          ->orWhere('friend_id', $userId);
-                                })
-                                ->where('status', 'accepted')
-                                ->first();
-
-            if ($existingPartner) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Ya tienes una pareja, no puedes agregar más.'
-                ], 400);
-            }
-
             // Crear solicitud de amistad con estado 'pending'
             $friendship = Friend::create([
                 'user_id' => $userId,
