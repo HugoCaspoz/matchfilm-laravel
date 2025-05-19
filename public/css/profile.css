@@ -169,7 +169,7 @@ main {
 }
 
 #usernameError {
-  color: #ff6b6b;
+  color: #e50914;
   font-size: 0.8rem;
   margin-bottom: 10px;
 }
@@ -312,7 +312,7 @@ main {
 }
 
 .danger-zone h3 {
-  color: #ff6b6b;
+  color: #e50914;
   margin-bottom: 15px;
 }
 
