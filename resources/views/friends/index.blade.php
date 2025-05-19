@@ -67,46 +67,55 @@
             @endif
 
             <div class="col-md-6 mb-4">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h3 class="card-title mb-4">Mi Pareja</h3>
-                        <div id="amigo">
-                            @php
-                                $friends = \App\Models\Friend::where(function($query) {
-                                    $query->where('user_id', Auth::id())
-                                        ->orWhere('friend_id', Auth::id());
-                                })
-                                ->where('status', 'accepted')
-                                ->get()
-                                ->map(function($friendship) {
-                                    $friendId = $friendship->user_id == Auth::id() ? $friendship->friend_id : $friendship->user_id;
-                                    return \App\Models\User::find($friendId);
-                                });
-                            @endphp
-                            
-                            @if($friends->isEmpty())
-                                <div class="card" style="background-color: rgba(255, 255, 255, 0.1);">
-                                    <div class="card-body">
-                                        <h5 class="card-title">No tienes pareja</h5>
-                                        <input type="text" id="nombreAmigo" class="form-control" placeholder="Nombre de usuario"><br>
-                                        <p id="usernameError" class="text-danger"></p>
-                                        <button type="button" id="btnAgregarAmigo" class="btn" style="background-color: #ab9079; color: white;">Enviar solicitud de pareja</button>
-                                    </div>
-                                </div>
-                            @else
-                                @foreach($friends as $friend)
-                                    <div class="card" style="background-color: rgba(255, 255, 255, 0.1);">
-                                        <div class="card-body">
-                                            <h5 class="card-title"><b>{{ $friend->username ?? $friend->name }}</b></h5>
-                                            <button type="button" onclick="eliminarAmigo('{{ $friend->id }}')" class="btn btn-danger">Eliminar Pareja</button>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            @endif
+    <div class="card h-100">
+        <div class="card-body">
+            <h3 class="card-title mb-4">Mis Amigos</h3>
+            <div id="amigos">
+                @php
+                    $friends = \App\Models\Friend::where(function($query) {
+                        $query->where('user_id', Auth::id())
+                            ->orWhere('friend_id', Auth::id());
+                    })
+                    ->where('status', 'accepted')
+                    ->get()
+                    ->map(function($friendship) {
+                        $friendId = $friendship->user_id == Auth::id() ? $friendship->friend_id : $friendship->user_id;
+                        return \App\Models\User::find($friendId);
+                    });
+                @endphp
+                
+                <div class="mb-4">
+                    <div class="card" style="background-color: rgba(255, 255, 255, 0.1);">
+                        <div class="card-body">
+                            <h5 class="card-title">Agregar nuevo amigo</h5>
+                            <input type="text" id="nombreAmigo" class="form-control" placeholder="Nombre de usuario"><br>
+                            <p id="usernameError" class="text-danger"></p>
+                            <button type="button" id="btnAgregarAmigo" class="btn" style="background-color: #ab9079; color: white;">Enviar solicitud de amistad</button>
                         </div>
                     </div>
                 </div>
+                
+                @if($friends->isEmpty())
+                    <div class="text-center py-3">
+                        <p class="text-white-50">No tienes amigos todavía. Envía solicitudes para conectar con otros usuarios.</p>
+                    </div>
+                @else
+                    <h5 class="mb-3">Amigos actuales</h5>
+                    @foreach($friends as $friend)
+                        <div class="card mb-2" style="background-color: rgba(255, 255, 255, 0.1);">
+                            <div class="card-body d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0"><b>{{ $friend->username ?? $friend->name }}</b></h5>
+                                <button type="button" onclick="eliminarAmigo('{{ $friend->id }}')" class="btn btn-sm btn-danger">
+                                    <i class="fas fa-user-times"></i> Eliminar
+                                </button>
+                            </div>
+                        </div>
+                    @endforeach
+                @endif
             </div>
+        </div>
+    </div>
+</div>
 
             <div class="col-md-6 mb-4">
                 <div class="card h-100">

@@ -45,18 +45,17 @@ function agregarAmigo(nombreAmigo) {
         return response.json()
       }
       return response.json().then((err) => {
-        throw new Error(err.message || "Error al enviar solicitud de pareja")
+        throw new Error(err.message || "Error al enviar solicitud de amistad")
       })
     })
     .then((data) => {
       document.getElementById("alert").innerHTML = `
           <div class="alert alert-success alert-dismissible fade show text-center" role="alert">
-              <strong>Solicitud de pareja enviada correctamente!</strong>
+              <strong>Solicitud de amistad enviada correctamente!</strong>
               <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
           </div>`
-      setTimeout(() => {
-        window.location.reload()
-      }, 2000)
+      // Limpiar el campo de entrada
+      document.getElementById("nombreAmigo").value = ""
     })
     .catch((error) => {
       document.getElementById("alert").innerHTML = `
@@ -69,7 +68,7 @@ function agregarAmigo(nombreAmigo) {
 
 // Función para eliminar amigo
 function eliminarAmigo(friendId) {
-  if (confirm("¿Estás seguro de que quieres eliminar a esta pareja?")) {
+  if (confirm("¿Estás seguro de que quieres eliminar a este amigo?")) {
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content")
 
     fetch(`/friends/remove/${friendId}`, {
@@ -82,20 +81,20 @@ function eliminarAmigo(friendId) {
         if (response.ok) {
           document.getElementById("alert").innerHTML = `
                   <div class="alert alert-success alert-dismissible fade show text-center" role="alert">
-                      <strong>Pareja eliminada correctamente!</strong>
+                      <strong>Amigo eliminado correctamente!</strong>
                       <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                   </div>`
           setTimeout(() => {
             window.location.reload()
           }, 2000)
         } else {
-          throw new Error("Error al eliminar la pareja")
+          throw new Error("Error al eliminar el amigo")
         }
       })
       .catch((error) => {
         document.getElementById("alert").innerHTML = `
               <div class="alert alert-danger alert-dismissible fade show text-center" role="alert">
-                  <strong>Error al eliminar la pareja!</strong>
+                  <strong>Error al eliminar el amigo!</strong>
                   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
               </div>`
       })

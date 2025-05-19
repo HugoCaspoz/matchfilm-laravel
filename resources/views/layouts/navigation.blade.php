@@ -3,7 +3,7 @@
         <!-- Logo -->
         <a href="{{ route('movies.index') }}" class="nav-logo">
             <div class="logo-container">
-                <img src="{{ asset('images/logo.png') }}" alt="MatchFilm Logo" onerror="this.onerror=null; this.src='{{ asset('images/logo.png') }}';">
+                <img src="{{ asset('images/logo.png') }}" alt="MatchFilm Logo" onerror="this.onerror=null; this.src='{{ asset('images/default-logo.svg') }}';">
             </div>
             <span class="logo-text">MatchFilm</span>
         </a>

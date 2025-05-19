@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="d-flex justify-content-between align-items-center">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Buscar amigo') }}
+                {{ __('Buscar Amigos') }}
             </h2>
             <a href="{{ route('friends.index') }}" class="btn btn-outline-light">
                 <i class="fas fa-arrow-left me-2"></i> Volver
