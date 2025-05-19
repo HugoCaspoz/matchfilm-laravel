@@ -77,15 +77,10 @@ document.addEventListener("DOMContentLoaded", () => {
           const button = document.querySelector(`button[data-movie-id="${movieId}"]`)
           if (button) {
             if (action === "like") {
-              button.innerHTML = '<i class="fas fa-heart"></i>'
-              button.classList.remove("btn-outline-danger")
-              button.classList.add("btn-danger")
-              button.setAttribute("data-action", "dislike")
-            } else if (action === "dislike") {
               button.innerHTML = '<i class="fas fa-heart-broken"></i>'
               button.classList.remove("btn-outline-danger")
               button.classList.add("btn-danger")
-              button.setAttribute("data-action", "remove")
+              button.setAttribute("data-action", "unlike")
             } else {
               button.innerHTML = '<i class="far fa-heart"></i>'
               button.classList.remove("btn-danger")

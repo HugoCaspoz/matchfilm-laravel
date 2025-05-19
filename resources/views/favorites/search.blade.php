@@ -72,12 +72,12 @@
                                                 <i class="fas fa-film text-4xl text-gray-400"></i>
                                             </div>
                                         @endif
-                                        <button
-                                            class="favorite-btn {{ isset($movie['user_liked']) && $movie['user_liked'] ? 'btn-danger' : 'btn-outline-danger' }} favorite-btn"
-                                            data-movie-id="{{ $movie['id'] }}"
+                                        <button 
+                                            class="favorite-btn {{ isset($movie['user_liked']) && $movie['user_liked'] ? 'btn-danger' : 'btn-outline-danger' }} favorite-btn" 
+                                            data-movie-id="{{ $movie['id'] }}" 
                                             data-action="{{ isset($movie['user_liked']) && $movie['user_liked'] ? 'unlike' : 'like' }}"
                                         >
-                                            <i class="{{ isset($movie['user_liked']) && $movie['user_liked'] ? 'fas' : 'far' }} fa-heart"></i>
+                                            <i class="{{ isset($movie['user_liked']) && $movie['user_liked'] ? 'fas fa-heart-broken' : 'far fa-heart' }}"></i>
                                         </button>
                                         <div class="movie-info">
                                             <h3>{{ $movie['title'] }}</h3>
