@@ -129,7 +129,7 @@ class FriendController extends Controller
                 'user_id' => $friendId,
                 'from_user_id' => $userId,
                 'type' => 'friend_request',
-                'message' => Auth::user()->username . ' te ha enviado una solicitud de pareja.',
+                'message' => Auth::user()->username . ' te ha enviado una solicitud de amistad.',
                 'read' => false,
                 'data' => json_encode([
                     'friendship_id' => $friendship->id
@@ -138,14 +138,14 @@ class FriendController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Solicitud de pareja enviada correctamente.'
+                'message' => 'Solicitud de amistad enviada correctamente.'
             ]);
         } catch (\Exception $e) {
-            Log::error('Error al enviar solicitud de pareja: ' . $e->getMessage());
+            Log::error('Error al enviar solicitud de amistad: ' . $e->getMessage());
         
             return response()->json([
                 'success' => false,
-                'message' => 'Error al enviar solicitud de pareja: ' . $e->getMessage()
+                'message' => 'Error al enviar solicitud de amistad: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -175,15 +175,15 @@ class FriendController extends Controller
                 'user_id' => $friendship->user_id,
                 'from_user_id' => Auth::id(),
                 'type' => 'friend_accepted',
-                'message' => Auth::user()->username . ' ha aceptado tu solicitud de pareja.',
+                'message' => Auth::user()->username . ' ha aceptado tu solicitud de amistad.',
                 'read' => false,
                 'data' => json_encode([]),
             ]);
         
-            return redirect()->back()->with('success', 'Solicitud de pareja aceptada correctamente.');
+            return redirect()->back()->with('success', 'Solicitud de amistad aceptada correctamente.');
         } catch (\Exception $e) {
-            Log::error('Error al aceptar solicitud de pareja: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Error al aceptar la solicitud de pareja.');
+            Log::error('Error al aceptar solicitud de amistad: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error al aceptar la solicitud de amistad.');
         }
     }
 
@@ -206,20 +206,20 @@ class FriendController extends Controller
             $friendship->status = 'rejected';
             $friendship->save();
         
-        // Opcional: Crear notificación para el remitente
-        Notification::create([
-            'user_id' => $friendship->user_id,
-            'from_user_id' => Auth::id(),
-            'type' => 'friend_rejected',
-            'message' => Auth::user()->username . ' ha rechazado tu solicitud de pareja.',
-            'read' => false,
-            'data' => json_encode([]),
-        ]);
+            // Opcional: Crear notificación para el remitente
+            Notification::create([
+                'user_id' => $friendship->user_id,
+                'from_user_id' => Auth::id(),
+                'type' => 'friend_rejected',
+                'message' => Auth::user()->username . ' ha rechazado tu solicitud de amistad.',
+                'read' => false,
+                'data' => json_encode([]),
+            ]);
         
-            return redirect()->back()->with('success', 'Solicitud de pareja rechazada.');
+            return redirect()->back()->with('success', 'Solicitud de amistad rechazada.');
         } catch (\Exception $e) {
-            Log::error('Error al rechazar solicitud de pareja: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Error al rechazar la solicitud de pareja.');
+            Log::error('Error al rechazar solicitud de amistad: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error al rechazar la solicitud de amistad.');
         }
     }
 
@@ -241,10 +241,10 @@ class FriendController extends Controller
                 })
                 ->delete();
 
-            return redirect()->back()->with('success', 'Pareja eliminada correctamente.');
+            return redirect()->back()->with('success', 'Amigo eliminado correctamente.');
         } catch (\Exception $e) {
-            Log::error('Error al eliminar pareja: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Error al eliminar la pareja.');
+            Log::error('Error al eliminar amigo: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error al eliminar el amigo.');
         }
     }
 
