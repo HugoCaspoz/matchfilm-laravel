@@ -3,92 +3,115 @@
 namespace App\Http\Controllers;
 
 use App\Models\FilmMatch;
+use App\Models\Friend;
+use App\Models\MovieLike;
+use App\Models\User;
+use App\Services\TmdbService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class MatchController extends Controller
 {
-    public function __construct()
+    protected $tmdbService;
+
+    public function __construct(TmdbService $tmdbService)
     {
         $this->middleware('auth');
+        $this->tmdbService = $tmdbService;
     }
 
     public function index()
     {
-        // Obtener todos los matches donde el usuario es el iniciador o el amigo
-        $userId = Auth::id();
-
-        // Primero, verifiquemos qué columnas tiene la tabla matches
-        $columns = DB::getSchemaBuilder()->getColumnListing('matches');
-
-        $query = FilmMatch::where('user_id_1', $userId)
-                      ->orWhere('friend_id', $userId)
-                      ->with(['user', 'friend']);
-
-        // Ordenar por id si no existe created_at
-        if (!in_array('created_at', $columns)) {
-            if (in_array('matched_at', $columns)) {
-                $query->orderBy('matched_at', 'desc');
-            } else {
-                $query->orderBy('id', 'desc');
-            }
-        } else {
-            $query->orderBy('created_at', 'desc');
+        $user = Auth::user();
+        
+        // Obtener los amigos del usuario
+        $friends = Friend::where(function($query) use ($user) {
+                $query->where('user_id', $user->id)
+                    ->orWhere('friend_id', $user->id);
+            })
+            ->where('status', 'accepted')
+            ->get()
+            ->map(function($friendship) use ($user) {
+                // Determinar cuál es el amigo (el otro usuario en la relación)
+                $friendId = $friendship->user_id == $user->id ? $friendship->friend_id : $friendship->user_id;
+                return User::find($friendId);
+            });
+        
+        // Si no hay amigos, no puede haber matches
+        if ($friends->isEmpty()) {
+            return view('matches.index', [
+                'friends' => $friends,
+                'selectedFriend' => null,
+                'matches' => []
+            ]);
         }
-
-        $matches = $query->get();
-
-        return view('matches.index', compact('matches'));
+        
+        // Obtener el amigo seleccionado (por defecto el primero)
+        $selectedFriendId = request('friend_id', $friends->first()->id);
+        $selectedFriend = $friends->firstWhere('id', $selectedFriendId);
+        
+        // Obtener los matches (películas que ambos han dado like)
+        $matches = $this->getMatchesWithFriend($user->id, $selectedFriendId);
+        
+        return view('matches.index', [
+            'friends' => $friends,
+            'selectedFriend' => $selectedFriend,
+            'matches' => $matches
+        ]);
     }
-
-    public function show($id)
+    
+    /**
+     * Obtener las películas que ambos usuarios han dado like
+     */
+    private function getMatchesWithFriend($userId, $friendId)
     {
-        // Verificar que el match pertenezca al usuario actual (como iniciador o receptor)
-        $match = FilmMatch::where('id', $id)
-                      ->where(function($query) {
-                          $query->where('user_id_1', Auth::id())
-                                ->orWhere('friend_id', Auth::id());
-                      })
-                      ->with(['user', 'friend'])
-                      ->firstOrFail();
-
-        return view('matches.show', compact('match'));
-    }
-
-    public function accept($id)
-    {
-        $match = FilmMatch::where('id', $id)
-                      ->where('user_id_1', Auth::id())
-                      ->firstOrFail();
-
-        $match->status = 'accepted';
-        $match->save();
-
-        // También actualizar el match recíproco si existe
-        FilmMatch::where('user_id_1', $match->friend_id)
-                ->where('friend_id', Auth::id())
-                ->where('tmdb_id', $match->tmdb_id)
-                ->update(['status' => 'accepted']);
-
-        return redirect()->back()->with('success', 'Match aceptado.');
-    }
-
-    public function reject($id)
-    {
-        $match = FilmMatch::where('id', $id)
-                      ->where('user_id_1', Auth::id())
-                      ->firstOrFail();
-
-        $match->status = 'rejected';
-        $match->save();
-
-        // También actualizar el match recíproco si existe
-        FilmMatch::where('user_id_1', $match->friend_id)
-                ->where('friend_id', Auth::id())
-                ->where('tmdb_id', $match->tmdb_id)
-                ->update(['status' => 'rejected']);
-
-        return redirect()->back()->with('success', 'Match rechazado.');
+        // Obtener IDs de películas que ambos usuarios han dado like
+        $matchedMovieIds = DB::table('movie_likes as ml1')
+            ->join('movie_likes as ml2', 'ml1.tmdb_id', '=', 'ml2.tmdb_id')
+            ->where('ml1.user_id', $userId)
+            ->where('ml2.user_id', $friendId)
+            ->where('ml1.liked', true)
+            ->where('ml2.liked', true)
+            ->select('ml1.tmdb_id')
+            ->pluck('tmdb_id')
+            ->toArray();
+        
+        // Obtener detalles de cada película
+        $matches = [];
+        foreach ($matchedMovieIds as $movieId) {
+            $movieDetails = $this->tmdbService->getMovie($movieId);
+            if ($movieDetails) {
+                // Verificar si ya existe un registro de match en la base de datos
+                $existingMatch = FilmMatch::where(function($query) use ($userId, $friendId, $movieId) {
+                    $query->where('user_id_1', $userId)
+                        ->where('friend_id', $friendId)
+                        ->where('tmdb_id', $movieId);
+                })
+                ->orWhere(function($query) use ($userId, $friendId, $movieId) {
+                    $query->where('user_id_1', $friendId)
+                        ->where('friend_id', $userId)
+                        ->where('tmdb_id', $movieId);
+                })
+                ->first();
+                
+                // Si no existe, crear el registro de match
+                if (!$existingMatch) {
+                    FilmMatch::create([
+                        'user_id_1' => $userId,
+                        'friend_id' => $friendId,
+                        'tmdb_id' => $movieId,
+                        'movie_title' => $movieDetails['title'] ?? 'Película sin título',
+                        'movie_poster' => $movieDetails['poster_path'] ? 'https://image.tmdb.org/t/p/w500' . $movieDetails['poster_path'] : null,
+                        'status' => 'pending',
+                        'matched_at' => now()
+                    ]);
+                }
+                
+                $matches[] = $movieDetails;
+            }
+        }
+        
+        return $matches;
     }
 }

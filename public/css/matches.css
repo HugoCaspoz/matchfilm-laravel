@@ -1,0 +1,301 @@
+:root {
+  --primary-color: #e50914;
+  --secondary-color: #221f1f;
+  --light-color: #f5f5f1;
+  --dark-color: #141414;
+  --border-radius: 10px;
+  --box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  --transition: all 0.3s ease;
+}
+
+/* Selector de amigos */
+.friend-selector {
+  margin-bottom: 20px;
+}
+
+.friend-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.friend-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 15px;
+  background-color: #f8f9fa;
+  border-radius: var(--border-radius);
+  text-decoration: none;
+  color: #333;
+  transition: var(--transition);
+  border: 2px solid transparent;
+}
+
+.friend-item:hover {
+  background-color: #f0f0f0;
+  transform: translateY(-3px);
+}
+
+.friend-item.active {
+  background-color: rgba(229, 9, 20, 0.1);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.friend-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.friend-name {
+  font-weight: 500;
+}
+
+/* Tarjetas de matches */
+.match-card {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  background-color: white;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.match-card:hover {
+  transform: translateY(-5px);
+}
+
+.match-poster {
+  width: 100%;
+  height: 350px;
+  position: relative;
+  overflow: hidden;
+}
+
+.match-poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.match-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: var(--primary-color);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.match-info {
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.8rem 1rem;
+  background-color: rgba(0, 0, 0, 0.7);
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.match-info h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  flex-grow: 1;
+}
+
+.match-info span {
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 0.25rem 0.5rem;
+  border-radius: 3px;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.match-info span.green {
+  color: lightgreen;
+}
+
+.match-info span.orange {
+  color: orange;
+}
+
+.match-info span.red {
+  color: red;
+}
+
+.match-overview {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(34, 31, 31, 0.95);
+  color: white;
+  padding: 1rem;
+  max-height: 100%;
+  transform: translateY(101%);
+  transition: transform 0.3s ease-in;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+.match-card:hover .match-overview {
+  transform: translateY(0);
+}
+
+.match-overview h3 {
+  margin-top: 0;
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+}
+
+.match-overview p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin-bottom: 15px;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.match-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+.btn-watch {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.btn-watch:hover {
+  background-color: #c50812;
+  transform: translateY(-2px);
+}
+
+/* Mensaje de no matches */
+.no-matches,
+.no-friends {
+  text-align: center;
+  padding: 40px 20px;
+  width: 100%;
+}
+
+.no-matches i,
+.no-friends i {
+  font-size: 3rem;
+  color: var(--primary-color);
+  margin-bottom: 20px;
+}
+
+.no-matches h3,
+.no-friends h3 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.no-matches p,
+.no-friends p {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+/* Modal para "Ver juntos" */
+.modal-content {
+  border-radius: var(--border-radius);
+  border: none;
+}
+
+.modal-header {
+  background-color: var(--primary-color);
+  color: white;
+  border-top-left-radius: var(--border-radius);
+  border-top-right-radius: var(--border-radius);
+}
+
+.modal-title {
+  font-weight: 600;
+}
+
+.btn-close {
+  color: white;
+}
+
+.modal-footer .btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.modal-footer .btn-primary:hover {
+  background-color: #c50812;
+  border-color: #c50812;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .friend-list {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .match-poster {
+    height: 280px;
+  }
+
+  .match-info h3 {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .match-poster {
+    height: 220px;
+  }
+}
