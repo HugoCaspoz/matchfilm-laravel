@@ -53,7 +53,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/messages/{user}', [MessageController::class, 'show'])->name('messages.show');
     Route::post('/messages/{user}', [MessageController::class, 'store'])->name('messages.store');
     
-    // Amigos (amigo)
+    // Amigos (pareja)
     Route::get('/friends', [FriendController::class, 'index'])->name('friends.index');
     Route::get('/friends/search', [FriendController::class, 'search'])->name('friends.search');
     Route::post('/friends/request', [FriendController::class, 'sendRequest'])->name('friends.request');
@@ -65,6 +65,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/notifications/read/{id}', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read.all');
     Route::get('/notifications/count', [NotificationController::class, 'getUnreadCount'])->name('notifications.count');
+    // Añadir la ruta para la invitación de película
+    Route::post('/notifications/movie-invitation', [NotificationController::class, 'sendMovieInvitation'])->name('notifications.movie_invitation');
 });
 
 // Rutas para servir archivos CSS y JS

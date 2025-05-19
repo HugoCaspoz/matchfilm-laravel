@@ -91,6 +91,7 @@
                                                     class="favorite-btn btn-primary" 
                                                     data-movie-id="{{ $movie['id'] }}" 
                                                     data-movie-title="{{ $movie['title'] }}"
+                                                    data-friend-id="{{ $selectedFriend->id }}"
                                                     title="Ver juntos"
                                                 >
                                                     <i class="fas fa-play-circle"></i>

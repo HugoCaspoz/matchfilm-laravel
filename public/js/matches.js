@@ -70,13 +70,14 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   })
 
-  // Manejar el envío de invitación
+  // Modificar el evento de clic del botón sendInviteBtn para enviar una solicitud AJAX
   if (sendInviteBtn) {
     sendInviteBtn.addEventListener("click", function () {
       const movieId = this.getAttribute("data-movie-id")
       const movieTitle = this.getAttribute("data-movie-title")
       const watchDate = watchDateInput ? watchDateInput.value : ""
       const watchMessage = watchMessageInput ? watchMessageInput.value : ""
+      const friendId = document.querySelector(".friend-item.active")?.getAttribute("href")?.split("friend_id=")[1]
 
       // Validar fecha
       if (!watchDate) {
@@ -84,14 +85,39 @@ document.addEventListener("DOMContentLoaded", () => {
         return
       }
 
-      // Aquí iría la lógica para enviar la invitación
-      // Por ahora, solo mostraremos un mensaje de éxito
-      showAlert(`Invitación enviada para ver "${movieTitle}" el ${watchDate}.`, "success")
+      // Enviar la invitación al servidor
+      fetch("/notifications/movie-invitation", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-TOKEN": csrfToken,
+        },
+        body: JSON.stringify({
+          friend_id: friendId,
+          movie_id: movieId,
+          movie_title: movieTitle,
+          watch_date: watchDate,
+          message: watchMessage,
+        }),
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Error al enviar la invitación")
+          }
+          return response.json()
+        })
+        .then((data) => {
+          showAlert(`Invitación enviada para ver "${movieTitle}" el ${watchDate}.`, "success")
 
-      // Cerrar el modal
-      if (watchModalInstance) {
-        watchModalInstance.hide()
-      }
+          // Cerrar el modal
+          if (watchModalInstance) {
+            watchModalInstance.hide()
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error)
+          showAlert("Error al enviar la invitación. Inténtalo de nuevo.", "danger")
+        })
     })
   }
 
