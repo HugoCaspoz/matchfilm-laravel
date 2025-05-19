@@ -21,8 +21,8 @@ class FriendController extends Controller
     {
         // Obtener el usuario actual
         $user = Auth::user();
-
-        // Obtener amigos (amigos) - buscar en ambas direcciones
+        
+        // Obtener amigos (pareja) - buscar en ambas direcciones
         $friends = DB::table('friends')
                     ->where(function($query) use ($user) {
                         $query->where('user_id', $user->id)
@@ -30,20 +30,20 @@ class FriendController extends Controller
                     })
                     ->where('status', 'accepted')
                     ->join('users', function($join) use ($user) {
-                        $join->on('users.id', '=', DB::raw('CASE
-                            WHEN friends.user_id = ' . $user->id . ' THEN friends.friend_id
+                        $join->on('users.id', '=', DB::raw('CASE 
+                            WHEN friends.user_id = ' . $user->id . ' THEN friends.friend_id 
                             ELSE friends.user_id END'));
                     })
                     ->select('users.*', 'friends.id as friendship_id')
                     ->get();
-
+        
         // Obtener notificaciones
         $notifications = Notification::where('user_id', $user->id)
                             ->where('read', false)
                             ->with('fromUser')
                             ->orderBy('created_at', 'desc')
                             ->get();
-
+        
         return view('friends.index', compact('friends', 'notifications'));
     }
 
@@ -60,7 +60,7 @@ class FriendController extends Controller
                         })
                         ->where('id', '!=', Auth::id())
                         ->get();
-
+            
             // Marcar usuarios que ya son amigos
             $user = Auth::user();
             $friendIds = DB::table('friends')
@@ -74,7 +74,7 @@ class FriendController extends Controller
                             return $friend->user_id == $user->id ? $friend->friend_id : $friend->user_id;
                         })
                         ->toArray();
-
+            
             foreach ($results as $result) {
                 $result->is_friend = in_array($result->id, $friendIds);
             }
@@ -113,11 +113,11 @@ class FriendController extends Controller
             if ($existingFriendship) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Ya existe una relación de amistad con este usuario.'
+                    'message' => 'Ya existe una relación de amistad o solicitud pendiente con este usuario.'
                 ], 400);
             }
 
-            // Verificar si el usuario ya tiene un amigo
+            // Verificar si el usuario ya tiene una pareja aceptada
             $existingPartner = Friend::where(function($query) use ($userId) {
                                     $query->where('user_id', $userId)
                                           ->orWhere('friend_id', $userId);
@@ -128,38 +128,113 @@ class FriendController extends Controller
             if ($existingPartner) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Ya tienes una amigo, no puedes agregar más.'
+                    'message' => 'Ya tienes una pareja, no puedes agregar más.'
                 ], 400);
             }
 
-            // Crear amistad directamente (sin solicitud pendiente)
+            // Crear solicitud de amistad con estado 'pending'
             $friendship = Friend::create([
                 'user_id' => $userId,
                 'friend_id' => $friendId,
-                'status' => 'accepted' // Aceptada directamente
+                'status' => 'pending' // Cambiado a 'pending' para requerir aceptación
             ]);
 
             // Crear notificación
             Notification::create([
                 'user_id' => $friendId,
                 'from_user_id' => $userId,
-                'type' => 'friend_accepted',
-                'message' => Auth::user()->username . ' te ha agregado como amigo.',
+                'type' => 'friend_request',
+                'message' => Auth::user()->username . ' te ha enviado una solicitud de pareja.',
                 'read' => false,
-                'data' => json_encode([]),
+                'data' => json_encode([
+                    'friendship_id' => $friendship->id
+                ]),
             ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'amigo agregada correctamente.'
+                'message' => 'Solicitud de pareja enviada correctamente.'
             ]);
         } catch (\Exception $e) {
-            Log::error('Error al agregar amigo: ' . $e->getMessage());
-
+            Log::error('Error al enviar solicitud de pareja: ' . $e->getMessage());
+        
             return response()->json([
                 'success' => false,
-                'message' => 'Error al agregar amigo: ' . $e->getMessage()
+                'message' => 'Error al enviar solicitud de pareja: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    // Añadir métodos para aceptar y rechazar solicitudes de amistad
+    public function acceptRequest($id)
+    {
+        try {
+            $friendship = Friend::findOrFail($id);
+        
+            // Verificar que el usuario actual sea el destinatario de la solicitud
+            if ($friendship->friend_id != Auth::id()) {
+                return redirect()->back()->with('error', 'No tienes permiso para aceptar esta solicitud.');
+            }
+        
+            // Verificar que la solicitud esté pendiente
+            if ($friendship->status != 'pending') {
+                return redirect()->back()->with('error', 'Esta solicitud ya ha sido procesada.');
+            }
+        
+            // Aceptar la solicitud
+            $friendship->status = 'accepted';
+            $friendship->save();
+        
+            // Crear notificación para el remitente
+            Notification::create([
+                'user_id' => $friendship->user_id,
+                'from_user_id' => Auth::id(),
+                'type' => 'friend_accepted',
+                'message' => Auth::user()->username . ' ha aceptado tu solicitud de pareja.',
+                'read' => false,
+                'data' => json_encode([]),
+            ]);
+        
+            return redirect()->back()->with('success', 'Solicitud de pareja aceptada correctamente.');
+        } catch (\Exception $e) {
+            Log::error('Error al aceptar solicitud de pareja: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error al aceptar la solicitud de pareja.');
+        }
+    }
+
+    public function rejectRequest($id)
+    {
+        try {
+            $friendship = Friend::findOrFail($id);
+        
+            // Verificar que el usuario actual sea el destinatario de la solicitud
+            if ($friendship->friend_id != Auth::id()) {
+                return redirect()->back()->with('error', 'No tienes permiso para rechazar esta solicitud.');
+            }
+        
+            // Verificar que la solicitud esté pendiente
+            if ($friendship->status != 'pending') {
+                return redirect()->back()->with('error', 'Esta solicitud ya ha sido procesada.');
+            }
+        
+            // Rechazar la solicitud
+            $friendship->status = 'rejected';
+            $friendship->save();
+        
+        // Opcional: Crear notificación para el remitente
+        Notification::create([
+            'user_id' => $friendship->user_id,
+            'from_user_id' => Auth::id(),
+            'type' => 'friend_rejected',
+            'message' => Auth::user()->username . ' ha rechazado tu solicitud de pareja.',
+            'read' => false,
+            'data' => json_encode([]),
+        ]);
+        
+            return redirect()->back()->with('success', 'Solicitud de pareja rechazada.');
+        } catch (\Exception $e) {
+            Log::error('Error al rechazar solicitud de pareja: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error al rechazar la solicitud de pareja.');
         }
     }
 
@@ -167,7 +242,7 @@ class FriendController extends Controller
     {
         try {
             $user = Auth::user();
-
+            
             // Eliminar relación en ambas direcciones
             Friend::where(function($query) use ($user, $id) {
                     $query->where(function($q) use ($user, $id) {
@@ -181,10 +256,10 @@ class FriendController extends Controller
                 })
                 ->delete();
 
-            return redirect()->back()->with('success', 'amigo eliminada correctamente.');
+            return redirect()->back()->with('success', 'Pareja eliminada correctamente.');
         } catch (\Exception $e) {
-            Log::error('Error al eliminar amigo: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Error al eliminar la amigo.');
+            Log::error('Error al eliminar pareja: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error al eliminar la pareja.');
         }
     }
 
@@ -193,7 +268,7 @@ class FriendController extends Controller
     {
         try {
             $userId = Auth::id();
-
+            
             // Verificar que sean amigos
             $friendship = Friend::where(function($query) use ($userId, $friendId) {
                             $query->where('user_id', $userId)
@@ -205,14 +280,14 @@ class FriendController extends Controller
                         })
                         ->where('status', 'accepted')
                         ->first();
-
+            
             if (!$friendship) {
                 return response()->json([
                     'success' => false,
                     'message' => 'No existe una relación de amistad con este usuario.'
                 ], 400);
             }
-
+            
             // Buscar películas que ambos han dado like
             $matches = DB::table('movie_likes as ml1')
                         ->join('movie_likes as ml2', 'ml1.tmdb_id', '=', 'ml2.tmdb_id')
@@ -222,14 +297,14 @@ class FriendController extends Controller
                         ->where('ml2.liked', true)
                         ->select('ml1.tmdb_id')
                         ->get();
-
+            
             return response()->json([
                 'success' => true,
                 'matches' => $matches
             ]);
         } catch (\Exception $e) {
             Log::error('Error al obtener matches: ' . $e->getMessage());
-
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Error al obtener matches: ' . $e->getMessage()

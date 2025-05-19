@@ -59,6 +59,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/friends/request', [FriendController::class, 'sendRequest'])->name('friends.request');
     Route::delete('/friends/remove/{id}', [FriendController::class, 'removeFriend'])->name('friends.remove');
     Route::get('/friends/matches/{id}', [FriendController::class, 'getMatches'])->name('friends.matches');
+    Route::post('/friends/accept/{id}', [FriendController::class, 'acceptRequest'])->name('friends.accept');
+    Route::post('/friends/reject/{id}', [FriendController::class, 'rejectRequest'])->name('friends.reject');
     
     // Notificaciones
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');

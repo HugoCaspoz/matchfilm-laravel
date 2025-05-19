@@ -31,7 +31,7 @@
                                 <div class="profile-avatar profile-avatar-placeholder" data-username="{{ $user->name }}">
                                     {{ substr($user->name, 0, 1) }}
                                 </div>
-
+                                
                                 <div class="profile-info">
                                     <h1>{{ $user->name }}</h1>
                                     <p>{{ '@' . $user->username }}</p>
@@ -41,7 +41,7 @@
                                     </a>
                                 </div>
                             </div>
-
+                            
                             <div class="profile-stats">
                                 <div class="stat-item">
                                     <h3>{{ $user->movieLikes()->where('liked', true)->count() }}</h3>
@@ -59,28 +59,67 @@
                         </div>
                     </div>
                 </div>
-
+                
                 <div class="profile-section">
                     <div class="partner-section">
-                        <h2>Mis Amigos</h2>
+                        <h2>Mi Pareja</h2>
                         <div class="card partner-card">
                             <div id="amigo">
                                 @php
-                                    $friends = $user->friends()->where('status', 'accepted')->get();
+                                    // Verificar si hay solicitudes pendientes
+                                    $pendingRequests = \App\Models\Friend::where('friend_id', Auth::id())
+                                                        ->where('status', 'pending')
+                                                        ->with('user')
+                                                        ->get();
+                                    
+                                    // Obtener amigos aceptados
+                                    $friends = \App\Models\Friend::where(function($query) use ($user) {
+                                        $query->where('user_id', $user->id)
+                                            ->orWhere('friend_id', $user->id);
+                                    })
+                                    ->where('status', 'accepted')
+                                    ->get()
+                                    ->map(function($friendship) use ($user) {
+                                        $friendId = $friendship->user_id == $user->id ? $friendship->friend_id : $friendship->user_id;
+                                        return \App\Models\User::find($friendId);
+                                    });
                                 @endphp
-
+                                
+                                @if($pendingRequests->isNotEmpty())
+                                    <div class="mb-4">
+                                        <h5 class="card-title">Solicitudes pendientes</h5>
+                                        @foreach($pendingRequests as $request)
+                                            <div class="card mb-2" style="background-color: rgba(255, 255, 255, 0.1);">
+                                                <div class="card-body">
+                                                    <h6 class="card-subtitle">{{ $request->user->username ?? $request->user->name }}</h6>
+                                                    <div class="d-flex mt-2">
+                                                        <form action="{{ route('friends.accept', $request->id) }}" method="POST" class="me-2">
+                                                            @csrf
+                                                            <button type="submit" class="btn btn-sm btn-success">Aceptar</button>
+                                                        </form>
+                                                        <form action="{{ route('friends.reject', $request->id) }}" method="POST">
+                                                            @csrf
+                                                            <button type="submit" class="btn btn-sm btn-danger">Rechazar</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
+                                
                                 @if($friends->isEmpty())
-                                    <h5 class="card-title">No tienes amigo</h5>
+                                    <h5 class="card-title">No tienes pareja</h5>
                                     <input type="text" id="nombreAmigo" class="form-control" placeholder="Nombre de usuario">
                                     <p id="usernameError"></p>
-                                    <button type="button" id="btnAgregarAmigo" class="btn btn-primary">Agrega a tu amigo</button>
+                                    <button type="button" id="btnAgregarAmigo" class="btn btn-primary">Enviar solicitud</button>
                                 @else
                                     @foreach($friends as $friend)
                                         <h5 class="card-title"><b>{{ $friend->username ?? $friend->name }}</b></h5>
                                         <form action="{{ route('friends.remove', $friend->id) }}" method="POST">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-danger">Eliminar Amigo</button>
+                                            <button type="submit" class="btn btn-danger">Eliminar Pareja</button>
                                         </form>
                                     @endforeach
                                 @endif
@@ -89,14 +128,14 @@
                     </div>
                 </div>
             </div>
-
+            
             <div class="notifications-section">
                 <h2>Notificaciones</h2>
                 <div class="notification-list">
                     @php
                         $notifications = $user->notifications()->where('read', false)->with('fromUser')->orderBy('created_at', 'desc')->get();
                     @endphp
-
+                    
                     @if($notifications->isEmpty())
                         <p class="text-center text-white-50">No tienes notificaciones</p>
                     @else

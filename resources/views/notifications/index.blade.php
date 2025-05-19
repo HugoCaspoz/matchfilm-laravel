@@ -120,7 +120,20 @@
                                             </div>
                                         @else
                                             <div class="notification-actions">
-                                                @if(!$notification->read)
+                                                @if($notification->type == 'friend_request' && isset($notification->data['friendship_id']))
+                                                    <form action="{{ route('friends.accept', $notification->data['friendship_id']) }}" method="POST" class="inline">
+                                                        @csrf
+                                                        <button type="submit" class="btn-primary-action">
+                                                            <i class="fas fa-check mr-1"></i> Aceptar solicitud
+                                                        </button>
+                                                    </form>
+                                                    <form action="{{ route('friends.reject', $notification->data['friendship_id']) }}" method="POST" class="inline">
+                                                        @csrf
+                                                        <button type="submit" class="btn-mark-read">
+                                                            <i class="fas fa-times mr-1"></i> Rechazar
+                                                        </button>
+                                                    </form>
+                                                @elseif(!$notification->read)
                                                     <form action="{{ route('notifications.read', $notification->id) }}" method="POST">
                                                         @csrf
                                                         <button type="submit" class="btn-mark-read">
