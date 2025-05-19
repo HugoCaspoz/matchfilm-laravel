@@ -13,20 +13,19 @@
 
         <!-- Bootstrap CSS -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
+        
         <!-- Font Awesome -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
         <!-- Estilos personalizados -->
         <link rel="stylesheet" href="{{ route('serve.css', 'header.css') }}">
         <link rel="stylesheet" href="{{ route('serve.css', 'app.css') }}">
-        <link rel="stylesheet" href="{{ route('serve.css', 'friends.css') }}">
 
         <!-- Additional Styles -->
         @stack('styles')
     </head>
     <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100">
+        <div class="min-h-screen bg-gray-100" style="background-color: #f8f5e6 !important;">
             @include('layouts.navigation')
 
             <!-- Page Heading -->
@@ -53,13 +52,7 @@
         <!-- Scripts personalizados -->
         <script src="{{ route('serve.js', 'header.js') }}"></script>
         <script src="{{ route('serve.js', 'app.js') }}"></script>
-        <script src="{{ route('serve.js', 'friends.js') }}"></script>
-
-        <!-- Página de búsqueda -->
-        @if(request()->routeIs('friends.search'))
-        <script src="{{ route('serve.js', 'search.js') }}"></script>
-        @endif
-
+        
         <!-- Additional Scripts -->
         @stack('scripts')
     </body>

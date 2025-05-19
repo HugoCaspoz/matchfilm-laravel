@@ -1,21 +1,22 @@
 :root {
-  --primary-color: #e50914;
+  --primary-color: #ff6b6b;
   --secondary-color: #4ecdc4;
   --dark-color: #212529;
   --light-color: #f8f9fa;
   --gray-color: #6c757d;
-  --gradient-primary: linear-gradient(135deg, #e50914 0%, #ff8e8e 100%);
+  --gradient-primary: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);
   --gradient-dark: linear-gradient(135deg, #2b2d42 0%, #3a3d5c 100%);
   --shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
   --transition: all 0.3s ease;
   --border-radius: 12px;
   --error-color: #dc3545;
   --success-color: #28a745;
+  --bone-color: #f5f5dc; /* Añadido color blanco hueso */
 }
 
 body {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f0f2f5;
+  background-color: var(--bone-color); /* Cambiado a blanco hueso */
   margin: 0;
   padding: 0;
   min-height: 100vh;

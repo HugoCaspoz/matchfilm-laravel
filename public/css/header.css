@@ -1,21 +1,23 @@
 :root {
-  --primary-color: #e50914;
+  --primary-color: #ff6b6b;
   --secondary-color: #4ecdc4;
   --dark-color: #212529;
   --light-color: #f8f9fa;
   --gray-color: #6c757d;
-  --gradient-primary: linear-gradient(135deg, #e50914 0%, #ff8e8e 100%);
+  --gradient-primary: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);
   --gradient-dark: linear-gradient(135deg, #2b2d42 0%, #3a3d5c 100%);
   --header-bg: #2b2d42;
   --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   --transition: all 0.3s ease;
   --border-radius: 12px;
+  --background-color: #f8f5e6; /* Color blanco hueso para el fondo */
 }
 
 body {
   margin: 0;
   padding: 0;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--background-color) !important;
 }
 
 .app-header {
@@ -292,4 +294,157 @@ body {
 .app-header.scrolled {
   background: rgba(43, 45, 66, 0.95);
   backdrop-filter: blur(10px);
+}
+
+
+  :root {
+  --primary-color: #e50914;
+  --secondary-color: #221f1f;
+  --light-color: #f5f5f1;
+  --dark-color: #141414;
+  --bone-color: #f5f5dc; /* Añadido color blanco hueso */
+}
+
+/* Estilos generales */
+body {
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  background-color: var(--bone-color) !important; /* Cambiado a blanco hueso */
+  color: #333;
+}
+
+/* Navbar */
+.navbar-dark {
+  background-color: var(--secondary-color) !important;
+}
+
+.navbar-brand {
+  font-weight: bold;
+  color: var(--primary-color) !important;
+}
+
+/* Botones */
+.btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: #c50812;
+  border-color: #c50812;
+}
+
+.btn-outline-primary {
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+/* Tarjetas de películas */
+.card {
+  transition: transform 0.3s, box-shadow 0.3s;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.card-img-top {
+  height: 300px;
+  object-fit: cover;
+}
+
+/* Hero section */
+.hero-section {
+  background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url("/img/cinema-background.jpg");
+  background-size: cover;
+  background-position: center;
+  padding: 100px 0;
+  border-radius: 10px;
+}
+
+/* Ratings */
+.star-rating {
+  color: #ffc107;
+  font-size: 1.5rem;
+}
+
+.star-rating .far {
+  color: #e4e5e9;
+}
+
+/* Matches */
+.match-card {
+  border-left: 4px solid var(--primary-color);
+}
+
+/* Perfil de usuario */
+.profile-header {
+  background-color: var(--secondary-color);
+  color: white;
+  padding: 30px 0;
+  margin-bottom: 30px;
+}
+
+.profile-avatar {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 5px solid white;
+}
+
+/* Mensajes */
+.message-bubble {
+  border-radius: 20px;
+  padding: 10px 15px;
+  margin-bottom: 10px;
+  max-width: 75%;
+}
+
+.message-sent {
+  background-color: #dcf8c6;
+  margin-left: auto;
+}
+
+.message-received {
+  background-color: #f1f0f0;
+}
+
+.message-time {
+  font-size: 0.7rem;
+  color: #999;
+  text-align: right;
+}
+
+/* Footer */
+footer {
+  margin-top: auto;
+}
+
+footer a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .card-img-top {
+    height: 200px;
+  }
+
+  .hero-section {
+    padding: 50px 0;
+  }
+
+  .profile-avatar {
+    width: 100px;
+    height: 100px;
+  }
 }

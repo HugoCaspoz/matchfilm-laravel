@@ -6,6 +6,11 @@
   --border-radius: 10px;
   --box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
   --transition: all 0.3s ease;
+  --background-color: #f8f5e6; /* Color blanco hueso para el fondo */
+}
+
+body {
+  background-color: var(--background-color) !important;
 }
 
 /* Contenedor principal */

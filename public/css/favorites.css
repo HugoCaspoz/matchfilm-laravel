@@ -6,9 +6,14 @@
   --border-radius: 10px;
   --box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
   --transition: all 0.3s ease;
+  --background-color: #f8f5e6; /* Color blanco hueso para el fondo */
 }
 
 /* Contenedor principal */
+body {
+  background-color: var(--background-color) !important;
+}
+
 #resultados {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -22,7 +27,7 @@
   height: 100%;
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
-  background-color: var(--secondary-color);
+  background-color: white;
   position: relative;
   overflow: hidden;
   transition: transform 0.3s ease;
