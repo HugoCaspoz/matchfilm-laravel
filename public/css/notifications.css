@@ -11,12 +11,13 @@
 
 body {
   background-color: var(--background-color) !important;
+  padding-top: 80px; /* Añadir padding-top para evitar que el contenido quede debajo del header */
 }
 
 /* Contenedor principal */
 .notifications-container {
   max-width: 800px;
-  margin: 0 auto;
+  margin: 20px auto; /* Aumentar el margen superior */
 }
 
 /* Estilos básicos para notificaciones */
@@ -307,4 +308,8 @@ body {
     margin-right: 0;
     margin-bottom: 12px;
   }
+}
+
+.py-12 {
+  padding-top: 1rem !important; /* Reducir el padding superior ya que tenemos padding en el body */
 }
