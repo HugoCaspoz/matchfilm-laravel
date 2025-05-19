@@ -14,37 +14,43 @@
   margin: 0 auto;
 }
 
+/* Estilos básicos para notificaciones */
+.notification-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
 /* Estilos para las notificaciones */
 .notification-item {
   display: flex;
   padding: 16px;
-  margin-bottom: 16px;
-  border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
-  transition: var(--transition);
+  border-radius: 8px;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
   position: relative;
   overflow: hidden;
 }
 
 .notification-item:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .notification-item.unread {
-  background-color: rgba(229, 9, 20, 0.05);
+  background-color: #fff5f5;
   border-left: 4px solid var(--primary-color);
 }
 
 .notification-item.read {
-  background-color: white;
   border-left: 4px solid #e5e7eb;
 }
 
 /* Icono de la notificación */
 .notification-icon {
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -76,7 +82,7 @@
 
 /* Contenido de la notificación */
 .notification-content {
-  flex-grow: 1;
+  flex: 1;
 }
 
 .notification-header {
@@ -88,7 +94,7 @@
 
 .notification-title {
   font-weight: 600;
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: #1f2937;
   margin: 0;
 }
@@ -106,8 +112,8 @@
 /* Acciones de la notificación */
 .notification-actions {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
 }
 
 .notification-actions .btn {
@@ -116,22 +122,31 @@
   font-size: 0.85rem;
   font-weight: 500;
   transition: var(--transition);
+  cursor: pointer;
 }
 
 .btn-mark-read {
-  color: #6b7280;
-  background-color: transparent;
-  border: 1px solid #e5e7eb;
+  background-color: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 .btn-mark-read:hover {
-  background-color: #f3f4f6;
+  background-color: #e5e7eb;
 }
 
 .btn-primary-action {
   background-color: var(--primary-color);
   color: white;
   border: none;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 .btn-primary-action:hover {
@@ -163,7 +178,7 @@
 }
 
 .movie-info {
-  flex-grow: 1;
+  flex: 1;
 }
 
 .movie-title {
@@ -203,14 +218,13 @@
   border: 1px solid #d1d5db;
   padding: 8px 16px;
   border-radius: 6px;
-  font-weight: 500;
   font-size: 0.9rem;
-  transition: var(--transition);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 .mark-all-btn:hover {
   background-color: #e5e7eb;
-  color: #1f2937;
 }
 
 /* Estado vacío */

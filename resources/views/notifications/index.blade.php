@@ -19,14 +19,14 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
-                    <div class="notifications-container">
-                        @if($notifications->isEmpty())
-                            <div class="empty-state">
-                                <i class="fas fa-bell"></i>
-                                <h3>No tienes notificaciones</h3>
-                                <p>Recibirás notificaciones cuando haya actividad relacionada con tus amigos y matches.</p>
-                            </div>
-                        @else
+                    @if($notifications->isEmpty())
+                        <div class="empty-state">
+                            <i class="fas fa-bell"></i>
+                            <h3>No tienes notificaciones</h3>
+                            <p>Recibirás notificaciones cuando haya actividad relacionada con tus amigos y matches.</p>
+                        </div>
+                    @else
+                        <div class="notification-list">
                             @foreach($notifications as $notification)
                                 <div class="notification-item {{ $notification->read ? 'read' : 'unread' }}">
                                     <div class="notification-icon 
@@ -66,16 +66,16 @@
                                                 </div>
                                                 <div class="movie-info">
                                                     <h5 class="movie-title">{{ $notification->data['movie_title'] }}</h5>
-                                                    <div class="notification-actions mt-2">
+                                                    <div class="notification-actions">
                                                         @if(!$notification->read)
                                                             <form action="{{ route('notifications.read', $notification->id) }}" method="POST" class="inline">
                                                                 @csrf
-                                                                <button type="submit" class="btn btn-mark-read">
+                                                                <button type="submit" class="btn-mark-read">
                                                                     <i class="fas fa-check mr-1"></i> Marcar como leída
                                                                 </button>
                                                             </form>
                                                         @endif
-                                                        <a href="{{ route('matches.index') }}" class="btn btn-primary-action ml-2">
+                                                        <a href="{{ route('matches.index') }}" class="btn-primary-action">
                                                             <i class="fas fa-eye mr-1"></i> Ver mis matches
                                                         </a>
                                                     </div>
@@ -103,16 +103,16 @@
                                                             "{{ $notification->data['message'] }}"
                                                         </div>
                                                     @endif
-                                                    <div class="notification-actions mt-2">
+                                                    <div class="notification-actions">
                                                         @if(!$notification->read)
                                                             <form action="{{ route('notifications.read', $notification->id) }}" method="POST" class="inline">
                                                                 @csrf
-                                                                <button type="submit" class="btn btn-mark-read">
+                                                                <button type="submit" class="btn-mark-read">
                                                                     <i class="fas fa-check mr-1"></i> Marcar como leída
                                                                 </button>
                                                             </form>
                                                         @endif
-                                                        <a href="{{ route('matches.index') }}" class="btn btn-primary-action ml-2">
+                                                        <a href="{{ route('matches.index') }}" class="btn-primary-action">
                                                             <i class="fas fa-check-circle mr-1"></i> Aceptar invitación
                                                         </a>
                                                     </div>
@@ -123,7 +123,7 @@
                                                 @if(!$notification->read)
                                                     <form action="{{ route('notifications.read', $notification->id) }}" method="POST">
                                                         @csrf
-                                                        <button type="submit" class="btn btn-mark-read">
+                                                        <button type="submit" class="btn-mark-read">
                                                             <i class="fas fa-check mr-1"></i> Marcar como leída
                                                         </button>
                                                     </form>
@@ -134,11 +134,11 @@
                                 </div>
                             @endforeach
 
-                            <div class="pagination-container">
+                            <div class="mt-6">
                                 {{ $notifications->links() }}
                             </div>
-                        @endif
-                    </div>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -147,17 +147,5 @@
     @push('styles')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="{{ asset('css/notifications.css') }}">
-    @endpush
-
-    @push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Animación para las notificaciones
-            const notifications = document.querySelectorAll('.notification-item');
-            notifications.forEach((notification, index) => {
-                notification.style.animationDelay = `${index * 0.1}s`;
-            });
-        });
-    </script>
     @endpush
 </x-app-layout>
