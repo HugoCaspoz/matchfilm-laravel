@@ -51,7 +51,12 @@ document.addEventListener("DOMContentLoaded", () => {
   watchButtons.forEach((button) => {
     button.addEventListener("click", function () {
       const movieId = this.getAttribute("data-movie-id")
-      const movieTitle = this.closest(".match-card").querySelector(".match-info h3").textContent
+      const movieTitle = this.getAttribute("data-movie-title")
+      // Reemplazar esta línea:
+      // const movieTitle = this.closest(".match-card").querySelector(".match-info h3").textContent
+
+      // Con esta:
+      // const movieTitle = this.getAttribute("data-movie-title")
 
       // Configurar el modal
       if (friendNameSpan) friendNameSpan.textContent = selectedFriendName || "tu amigo"

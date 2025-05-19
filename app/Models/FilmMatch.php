@@ -32,8 +32,6 @@ class FilmMatch extends Model
         'user_id_1',
         'friend_id',
         'tmdb_id',
-        'movie_title',
-        'movie_poster',
         'status',
         'matched_at'
     ];

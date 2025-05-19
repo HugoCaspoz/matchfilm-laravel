@@ -94,24 +94,22 @@ class MatchController extends Controller
                         ->where('tmdb_id', $movieId);
                 })
                 ->first();
-                
-                // Si no existe, crear el registro de match
-                if (!$existingMatch) {
-                    FilmMatch::create([
-                        'user_id_1' => $userId,
-                        'friend_id' => $friendId,
-                        'tmdb_id' => $movieId,
-                        'movie_title' => $movieDetails['title'] ?? 'Película sin título',
-                        'movie_poster' => $movieDetails['poster_path'] ? 'https://image.tmdb.org/t/p/w500' . $movieDetails['poster_path'] : null,
-                        'status' => 'pending',
-                        'matched_at' => now()
-                    ]);
-                }
-                
-                $matches[] = $movieDetails;
+            
+            // Si no existe, crear el registro de match
+            if (!$existingMatch) {
+                FilmMatch::create([
+                    'user_id_1' => $userId,
+                    'friend_id' => $friendId,
+                    'tmdb_id' => $movieId,
+                    'status' => 'pending',
+                    'matched_at' => now()
+                ]);
             }
+            
+            $matches[] = $movieDetails;
         }
-        
-        return $matches;
     }
+    
+    return $matches;
+}
 }
