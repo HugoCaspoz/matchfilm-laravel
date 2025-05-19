@@ -59,10 +59,9 @@ class FavoriteController extends Controller
             }
         }
     
-        return view('favorites.index', [
-            'likedMovies' => $likedMoviesDetails,
-            'dislikedMovies' => $dislikedMoviesDetails
-        ]);
+    return view('favorites.index', [
+        'movies' => $likedMoviesDetails
+    ]);
     }
 
     /**
