@@ -68,21 +68,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Si estamos en la página de favoritos, actualizar la lista
         if (window.location.pathname.includes("/favorites") && !window.location.pathname.includes("/search")) {
-          // Si eliminamos un favorito, recargar la página
-          if (action === "unlike") {
-            setTimeout(() => {
-              window.location.reload()
-            }, 1000)
-          }
+          // Recargar la página para mostrar los cambios
+          setTimeout(() => {
+            window.location.reload()
+          }, 1000)
         } else {
-          // Actualizar el botón de favorito
+          // Actualizar el botón de favorito en la búsqueda
           const button = document.querySelector(`button[data-movie-id="${movieId}"]`)
           if (button) {
             if (action === "like") {
               button.innerHTML = '<i class="fas fa-heart"></i>'
               button.classList.remove("btn-outline-danger")
               button.classList.add("btn-danger")
-              button.setAttribute("data-action", "unlike")
+              button.setAttribute("data-action", "dislike")
+            } else if (action === "dislike") {
+              button.innerHTML = '<i class="fas fa-heart-broken"></i>'
+              button.classList.remove("btn-outline-danger")
+              button.classList.add("btn-danger")
+              button.setAttribute("data-action", "remove")
             } else {
               button.innerHTML = '<i class="far fa-heart"></i>'
               button.classList.remove("btn-danger")

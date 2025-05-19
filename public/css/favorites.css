@@ -176,6 +176,16 @@
 }
 
 /* Botones de favoritos */
+.movie-actions {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .favorite-btn {
   width: 40px;
   height: 40px;
@@ -183,26 +193,28 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 10;
   transition: var(--transition);
   border: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .favorite-btn:hover {
   transform: scale(1.1);
 }
 
-.favorite-btn.liked {
+.favorite-btn.btn-danger {
   background-color: #e50914;
   color: white;
 }
 
-.favorite-btn.not-liked {
+.favorite-btn.btn-outline-danger {
   background-color: rgba(255, 255, 255, 0.7);
   color: #e50914;
+}
+
+.favorite-btn.btn-secondary {
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
 }
 
 /* Mensaje de no resultados */
@@ -227,6 +239,31 @@
 .no-results p {
   color: #666;
   margin-bottom: 20px;
+}
+
+/* Estilos para las pestañas */
+.nav-tabs {
+  border-bottom: 1px solid #dee2e6;
+}
+
+.nav-tabs .nav-link {
+  margin-bottom: -1px;
+  border: 1px solid transparent;
+  border-top-left-radius: 0.25rem;
+  border-top-right-radius: 0.25rem;
+  color: #586294;
+}
+
+.nav-tabs .nav-link:hover,
+.nav-tabs .nav-link:focus {
+  border-color: #e9ecef #e9ecef #dee2e6;
+}
+
+.nav-tabs .nav-link.active {
+  color: #ab9079;
+  background-color: #fff;
+  border-color: #dee2e6 #dee2e6 #fff;
+  font-weight: bold;
 }
 
 /* Responsive */
