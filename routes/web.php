@@ -25,41 +25,41 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
+    
     // Películas - acciones de usuario
     Route::post('/movies/{id}/rate', [MovieController::class, 'rate'])->name('movies.rate');
     Route::post('/movies/{id}/watchlist', [MovieController::class, 'addToWatchlist'])->name('movies.add_to_watchlist');
-
+    
     // Likes y dislikes
     Route::post('/movies/{id}/like', [MovieController::class, 'like'])->name('movies.like');
     Route::post('/movies/{id}/dislike', [MovieController::class, 'dislike'])->name('movies.dislike');
-
+    
     // Favoritos
     Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
     Route::get('/favorites/search', [FavoriteController::class, 'search'])->name('favorites.search');
     Route::post('/favorites/{id}', [FavoriteController::class, 'toggleFavorite'])->name('favorites.toggle');
-
+    
     // Listas de películas
     Route::resource('watchlists', WatchlistController::class);
     Route::post('/watchlists/{watchlist}/remove/{tmdb_id}', [WatchlistController::class, 'removeMovie'])->name('watchlists.remove_movie');
-
+    
     // Matches
     Route::get('/matches', [MatchController::class, 'index'])->name('matches.index');
     Route::post('/matches/{id}/accept', [MatchController::class, 'accept'])->name('matches.accept');
     Route::post('/matches/{id}/reject', [MatchController::class, 'reject'])->name('matches.reject');
-
+    
     // Mensajes
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
     Route::get('/messages/{user}', [MessageController::class, 'show'])->name('messages.show');
     Route::post('/messages/{user}', [MessageController::class, 'store'])->name('messages.store');
-
+    
     // Amigos (pareja)
     Route::get('/friends', [FriendController::class, 'index'])->name('friends.index');
     Route::get('/friends/search', [FriendController::class, 'search'])->name('friends.search');
     Route::post('/friends/request', [FriendController::class, 'sendRequest'])->name('friends.request');
     Route::delete('/friends/remove/{id}', [FriendController::class, 'removeFriend'])->name('friends.remove');
     Route::get('/friends/matches/{id}', [FriendController::class, 'getMatches'])->name('friends.matches');
-
+    
     // Notificaciones
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/read/{id}', [NotificationController::class, 'markAsRead'])->name('notifications.read');

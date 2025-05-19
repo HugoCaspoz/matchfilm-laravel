@@ -58,10 +58,10 @@ document.addEventListener("DOMContentLoaded", () => {
       body: JSON.stringify({ action: action }),
     })
       .then((response) => {
-        if (response.ok) {
-          return response.json()
+        if (!response.ok) {
+          throw new Error(`Error HTTP: ${response.status}`)
         }
-        throw new Error("Error en la respuesta del servidor")
+        return response.json()
       })
       .then((data) => {
         showAlert(data.message)
@@ -92,7 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
       })
       .catch((error) => {
         console.error("Error:", error)
-        showAlert("Error al procesar la solicitud", "danger")
+        showAlert("Error al procesar la solicitud. Por favor, inténtalo de nuevo.", "danger")
       })
   }
 

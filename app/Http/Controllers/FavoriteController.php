@@ -127,24 +127,16 @@ class FavoriteController extends Controller
                 $message = 'Película eliminada de favoritos';
             }
             
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => $message
-                ]);
-            }
-            
-            return redirect()->back()->with('success', $message);
+            return response()->json([
+                'success' => true,
+                'message' => $message
+            ]);
             
         } catch (\Exception $e) {
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Error al procesar la solicitud: ' . $e->getMessage()
-                ], 500);
-            }
-            
-            return redirect()->back()->with('error', 'Error al procesar la solicitud: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al procesar la solicitud: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

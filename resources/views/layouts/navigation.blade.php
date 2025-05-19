@@ -3,7 +3,7 @@
         <!-- Logo -->
         <a href="{{ route('movies.index') }}" class="nav-logo">
             <div class="logo-container">
-                <img src="{{ url('/img/logo.png') }}" alt="MatchFilm Logo" onerror="this.src='{{ url('/img/default-logo.png') }}'; this.onerror=null;">
+                <img src="{{ asset('images/logo.png') }}" alt="MatchFilm Logo" onerror="this.onerror=null; this.src='{{ asset('images/logo.png') }}';">
             </div>
             <span class="logo-text">MatchFilm</span>
         </a>
@@ -14,23 +14,23 @@
                 <i class="fas fa-film"></i>
                 <span class="nav-text">Películas</span>
             </a>
-
+            
             @auth
             <a href="{{ route('favorites.index') }}" class="nav-link {{ request()->routeIs('favorites.*') ? 'active' : '' }}">
                 <i class="fas fa-heart"></i>
                 <span class="nav-text">Favoritas</span>
             </a>
-
+            
             <a href="{{ route('matches.index') }}" class="nav-link {{ request()->routeIs('matches.index') ? 'active' : '' }}">
                 <i class="fas fa-star"></i>
                 <span class="nav-text">Matches</span>
             </a>
-
+            
             <a href="{{ route('friends.index') }}" class="nav-link {{ request()->routeIs('friends.index') ? 'active' : '' }}">
                 <i class="fas fa-users"></i>
                 <span class="nav-text">Amigos</span>
             </a>
-
+            
             <a href="{{ route('notifications.index') }}" class="nav-link {{ request()->routeIs('notifications.index') ? 'active' : '' }}">
                 <i class="fas fa-bell"></i>
                 <span class="nav-text">Notificaciones</span>
