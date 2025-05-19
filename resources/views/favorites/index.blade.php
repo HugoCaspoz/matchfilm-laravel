@@ -48,149 +48,58 @@
 
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
-                    <ul class="nav nav-tabs mb-4" id="movieTabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="liked-tab" data-bs-toggle="tab" data-bs-target="#liked" type="button" role="tab" aria-controls="liked" aria-selected="true">
-                                <i class="fas fa-heart me-2"></i> Me gustan
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="disliked-tab" data-bs-toggle="tab" data-bs-target="#disliked" type="button" role="tab" aria-controls="disliked" aria-selected="false">
-                                <i class="fas fa-heart-broken me-2"></i> No me gustan
-                            </button>
-                        </li>
-                    </ul>
-                    
-                    <div class="tab-content" id="movieTabsContent">
-                        <div class="tab-pane fade show active" id="liked" role="tabpanel" aria-labelledby="liked-tab">
-                            @if(count($likedMovies) === 0)
-                                <div class="text-center py-8 no-results">
-                                    <i class="fas fa-heart text-4xl text-gray-400 mb-4"></i>
-                                    <h3 class="text-xl font-semibold mb-2">Aún no tienes películas favoritas</h3>
-                                    <p class="text-gray-500 mb-4">Explora películas y marca las que te gusten para verlas aquí.</p>
-                                    <a href="{{ route('favorites.search') }}" class="inline-flex items-center px-4 py-2 bg-red-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-600 focus:bg-red-600 active:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                                        Buscar Películas
-                                    </a>
-                                </div>
-                            @else
-                                <div id="resultados" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                                    @foreach($likedMovies as $movie)
-                                        <div class="movie-card">
-                                            <div class="movie-poster">
-                                                @if(isset($movie['poster_path']) && $movie['poster_path'])
-                                                    <img src="https://image.tmdb.org/t/p/w500{{ $movie['poster_path'] }}" alt="{{ $movie['title'] }}">
-                                                @else
-                                                    <div class="w-full h-full flex items-center justify-center bg-gray-200">
-                                                        <i class="fas fa-film text-4xl text-gray-400"></i>
-                                                    </div>
-                                                @endif
-                                                <div class="movie-actions">
-                                                    <button 
-                                                        class="favorite-btn btn-danger favorite-btn" 
-                                                        data-movie-id="{{ $movie['id'] }}" 
-                                                        data-action="unlike"
-                                                    >
-                                                        <i class="fas fa-heart-broken"></i>
-                                                    </button>
-                                                    <button 
-                                                        class="favorite-btn btn-secondary" 
-                                                        data-movie-id="{{ $movie['id'] }}" 
-                                                        data-action="remove"
-                                                        title="Quitar valoración"
-                                                    >
-                                                        <i class="fas fa-times"></i>
-                                                    </button>
-                                                </div>
-                                                <div class="movie-info">
-                                                    <h3>{{ $movie['title'] }}</h3>
-                                                    @if(isset($movie['vote_average']))
-                                                        @php
-                                                            $colorClass = "red";
-                                                            if ($movie['vote_average'] >= 7.5) {
-                                                                $colorClass = "green";
-                                                            } elseif ($movie['vote_average'] >= 5) {
-                                                                $colorClass = "orange";
-                                                            }
-                                                        @endphp
-                                                        <span class="{{ $colorClass }}">{{ number_format($movie['vote_average'], 1) }}</span>
-                                                    @endif
-                                                </div>
-                                            </div>
-                                            <div class="movie-overview">
-                                                <h3>Descripción:</h3>
-                                                <p>{{ $movie['overview'] ?? 'No hay descripción disponible.' }}</p>
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            @endif
+                    @if(count($movies) === 0)
+                        <div class="text-center py-8 no-results">
+                            <i class="fas fa-heart text-4xl text-gray-400 mb-4"></i>
+                            <h3 class="text-xl font-semibold mb-2">Aún no tienes películas favoritas</h3>
+                            <p class="text-gray-500 mb-4">Explora películas y marca las que te gusten para verlas aquí.</p>
+                            <a href="{{ route('favorites.search') }}" class="inline-flex items-center px-4 py-2 bg-red-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-600 focus:bg-red-600 active:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                Buscar Películas
+                            </a>
                         </div>
-                        
-                        <div class="tab-pane fade" id="disliked" role="tabpanel" aria-labelledby="disliked-tab">
-                            @if(count($dislikedMovies) === 0)
-                                <div class="text-center py-8 no-results">
-                                    <i class="fas fa-heart-broken text-4xl text-gray-400 mb-4"></i>
-                                    <h3 class="text-xl font-semibold mb-2">No has marcado películas que no te gustan</h3>
-                                    <p class="text-gray-500 mb-4">Marca las películas que no te gustan para evitar recomendaciones similares.</p>
-                                    <a href="{{ route('favorites.search') }}" class="inline-flex items-center px-4 py-2 bg-red-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-600 focus:bg-red-600 active:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                                        Buscar Películas
-                                    </a>
-                                </div>
-                            @else
-                                <div id="resultados-disliked" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                                    @foreach($dislikedMovies as $movie)
-                                        <div class="movie-card">
-                                            <div class="movie-poster">
-                                                @if(isset($movie['poster_path']) && $movie['poster_path'])
-                                                    <img src="https://image.tmdb.org/t/p/w500{{ $movie['poster_path'] }}" alt="{{ $movie['title'] }}">
-                                                @else
-                                                    <div class="w-full h-full flex items-center justify-center bg-gray-200">
-                                                        <i class="fas fa-film text-4xl text-gray-400"></i>
-                                                    </div>
-                                                @endif
-                                                <div class="movie-actions">
-                                                    <button 
-                                                        class="favorite-btn btn-danger" 
-                                                        data-movie-id="{{ $movie['id'] }}" 
-                                                        data-action="like"
-                                                        title="Me gusta"
-                                                    >
-                                                        <i class="fas fa-heart"></i>
-                                                    </button>
-                                                    <button 
-                                                        class="favorite-btn btn-secondary" 
-                                                        data-movie-id="{{ $movie['id'] }}" 
-                                                        data-action="remove"
-                                                        title="Quitar valoración"
-                                                    >
-                                                        <i class="fas fa-times"></i>
-                                                    </button>
-                                                </div>
-                                                <div class="movie-info">
-                                                    <h3>{{ $movie['title'] }}</h3>
-                                                    @if(isset($movie['vote_average']))
-                                                        @php
-                                                            $colorClass = "red";
-                                                            if ($movie['vote_average'] >= 7.5) {
-                                                                $colorClass = "green";
-                                                            } elseif ($movie['vote_average'] >= 5) {
-                                                                $colorClass = "orange";
-                                                            }
-                                                        @endphp
-                                                        <span class="{{ $colorClass }}">{{ number_format($movie['vote_average'], 1) }}</span>
-                                                    @endif
-                                                </div>
+                    @else
+                        <div id="resultados" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                            @foreach($movies as $movie)
+                                <div class="movie-card">
+                                    <div class="movie-poster">
+                                        @if(isset($movie['poster_path']) && $movie['poster_path'])
+                                            <img src="https://image.tmdb.org/t/p/w500{{ $movie['poster_path'] }}" alt="{{ $movie['title'] }}">
+                                        @else
+                                            <div class="w-full h-full flex items-center justify-center bg-gray-200">
+                                                <i class="fas fa-film text-4xl text-gray-400"></i>
                                             </div>
-                                            <div class="movie-overview">
-                                                <h3>Descripción:</h3>
-                                                <p>{{ $movie['overview'] ?? 'No hay descripción disponible.' }}</p>
-                                            </div>
+                                        @endif
+                                        <button 
+                                            class="favorite-btn btn-danger" 
+                                            data-movie-id="{{ $movie['id'] }}" 
+                                            data-action="unlike"
+                                            title="Quitar de favoritos"
+                                        >
+                                            <i class="fas fa-heart-broken"></i>
+                                        </button>
+                                        <div class="movie-info">
+                                            <h3>{{ $movie['title'] }}</h3>
+                                            @if(isset($movie['vote_average']))
+                                                @php
+                                                    $colorClass = "red";
+                                                    if ($movie['vote_average'] >= 7.5) {
+                                                        $colorClass = "green";
+                                                    } elseif ($movie['vote_average'] >= 5) {
+                                                        $colorClass = "orange";
+                                                    }
+                                                @endphp
+                                                <span class="{{ $colorClass }}">{{ number_format($movie['vote_average'], 1) }}</span>
+                                            @endif
                                         </div>
-                                    @endforeach
+                                    </div>
+                                    <div class="movie-overview">
+                                        <h3>Descripción:</h3>
+                                        <p>{{ $movie['overview'] ?? 'No hay descripción disponible.' }}</p>
+                                    </div>
                                 </div>
-                            @endif
+                            @endforeach
                         </div>
-                    </div>
+                    @endif
                 </div>
             </div>
         </div>

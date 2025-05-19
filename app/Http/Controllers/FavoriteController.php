@@ -104,8 +104,8 @@ class FavoriteController extends Controller
     {
         try {
             $user = Auth::user();
-            $action = $request->input('action', 'like'); // 'like', 'dislike' o 'remove'
-        
+            $action = $request->input('action', 'like'); // 'like' o 'unlike'
+            
             if ($action === 'like') {
                 // Marcar como favorita
                 MovieLike::updateOrCreate(
@@ -117,39 +117,26 @@ class FavoriteController extends Controller
                         'liked' => true,
                     ]
                 );
-            
+                
                 $message = 'Película añadida a favoritos';
-            } elseif ($action === 'dislike') {
-                // Marcar como no me gusta
-                MovieLike::updateOrCreate(
-                    [
-                        'user_id' => $user->id,
-                        'tmdb_id' => $id,
-                    ],
-                    [
-                        'liked' => false,
-                    ]
-                );
-            
-                $message = 'Película marcada como no me gusta';
             } else {
-                // Quitar valoración
+                // Quitar de favoritos
                 MovieLike::where('user_id', $user->id)
                         ->where('tmdb_id', $id)
                         ->delete();
-            
-                $message = 'Valoración eliminada';
+                
+                $message = 'Película eliminada de favoritos';
             }
-        
+            
             if ($request->ajax()) {
                 return response()->json([
                     'success' => true,
                     'message' => $message
                 ]);
             }
-        
+            
             return redirect()->back()->with('success', $message);
-        
+            
         } catch (\Exception $e) {
             if ($request->ajax()) {
                 return response()->json([
@@ -157,7 +144,7 @@ class FavoriteController extends Controller
                     'message' => 'Error al procesar la solicitud: ' . $e->getMessage()
                 ], 500);
             }
-        
+            
             return redirect()->back()->with('error', 'Error al procesar la solicitud: ' . $e->getMessage());
         }
     }
