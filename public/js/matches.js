@@ -1,7 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   // Referencias a elementos del DOM
-  const matchesContainer = document.getElementById("matches-container")
-  const watchButtons = document.querySelectorAll(".btn-watch")
+  const favoriteButtons = document.querySelectorAll(".favorite-btn")
   const watchModal = document.getElementById("watchModal")
   const friendNameSpan = document.getElementById("friendName")
   const watchDateInput = document.getElementById("watchDate")
@@ -48,15 +47,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Manejar clics en los botones "Ver juntos"
-  watchButtons.forEach((button) => {
+  favoriteButtons.forEach((button) => {
     button.addEventListener("click", function () {
       const movieId = this.getAttribute("data-movie-id")
       const movieTitle = this.getAttribute("data-movie-title")
-      // Reemplazar esta línea:
-      // const movieTitle = this.closest(".match-card").querySelector(".match-info h3").textContent
-
-      // Con esta:
-      // const movieTitle = this.getAttribute("data-movie-title")
 
       // Configurar el modal
       if (friendNameSpan) friendNameSpan.textContent = selectedFriendName || "tu amigo"
@@ -102,9 +96,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Manejar el despliegue de descripciones al hacer hover
-  const matchCards = document.querySelectorAll(".match-card")
-  matchCards.forEach((card) => {
-    const overview = card.querySelector(".match-overview")
+  const movieCards = document.querySelectorAll(".movie-card")
+  movieCards.forEach((card) => {
+    const overview = card.querySelector(".movie-overview")
     if (overview) {
       card.addEventListener("mouseenter", () => {
         overview.style.transform = "translateY(0)"

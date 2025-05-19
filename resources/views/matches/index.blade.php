@@ -73,10 +73,10 @@
                                     </a>
                                 </div>
                             @else
-                                <div id="matches-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                                <div id="resultados" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                                     @foreach($matches as $movie)
-                                        <div class="match-card">
-                                            <div class="match-poster">
+                                        <div class="movie-card">
+                                            <div class="movie-poster">
                                                 @if(isset($movie['poster_path']) && $movie['poster_path'])
                                                     <img src="https://image.tmdb.org/t/p/w500{{ $movie['poster_path'] }}" alt="{{ $movie['title'] }}">
                                                 @else
@@ -87,7 +87,15 @@
                                                 <div class="match-badge">
                                                     <i class="fas fa-heart"></i> Match
                                                 </div>
-                                                <div class="match-info">
+                                                <button 
+                                                    class="favorite-btn btn-primary" 
+                                                    data-movie-id="{{ $movie['id'] }}" 
+                                                    data-movie-title="{{ $movie['title'] }}"
+                                                    title="Ver juntos"
+                                                >
+                                                    <i class="fas fa-play-circle"></i>
+                                                </button>
+                                                <div class="movie-info">
                                                     <h3>{{ $movie['title'] }}</h3>
                                                     @if(isset($movie['vote_average']))
                                                         @php
@@ -102,14 +110,9 @@
                                                     @endif
                                                 </div>
                                             </div>
-                                            <div class="match-overview">
+                                            <div class="movie-overview">
                                                 <h3>Descripción:</h3>
                                                 <p>{{ $movie['overview'] ?? 'No hay descripción disponible.' }}</p>
-                                                <div class="match-actions">
-                                                    <button class="btn-watch" data-movie-id="{{ $movie['id'] }}" data-movie-title="{{ $movie['title'] }}">
-                                                        <i class="fas fa-play-circle"></i> Ver juntos
-                                                    </button>
-                                                </div>
                                             </div>
                                         </div>
                                     @endforeach
@@ -151,6 +154,7 @@
 
     @push('styles')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('css/favorites.css') }}">
     <link rel="stylesheet" href="{{ asset('css/matches.css') }}">
     @endpush
 
