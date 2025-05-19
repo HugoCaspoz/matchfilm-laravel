@@ -209,29 +209,7 @@
                 </div>
             </div>
         </div>
-    </section>
-
-    <!-- CTA Section -->
-    <section class="cta-section">
-        <div class="container text-center">
-            <h2 class="mb-4">¿Listo para encontrar tu próxima película favorita?</h2>
-            <p class="lead mb-5">Únete a MatchFilm hoy y comienza a descubrir películas que te encantarán a ti y a tus amigos.</p>
-            <div class="cta-buttons">
-                @guest
-                    <a href="{{ route('register') }}" class="btn btn-primary btn-lg">Crear cuenta gratis</a>
-                    <a href="{{ route('login') }}" class="btn btn-outline-light btn-lg ms-3">Iniciar sesión</a>
-                @else
-                    <a href="{{ route('movies.index') }}" class="btn btn-primary btn-lg">Explorar películas</a>
-                    <a href="{{ route('matches.index') }}" class="btn btn-outline-light btn-lg ms-3">Ver mis matches</a>
-                @endguest
-            </div>
-        </div>
-        <div class="cta-wave">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
-                <path fill="#212529" fill-opacity="1" d="M0,160L48,170.7C96,181,192,203,288,202.7C384,203,480,181,576,165.3C672,149,768,139,864,154.7C960,171,1056,213,1152,218.7C1248,224,1344,192,1392,176L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
-            </svg>
-        </div>
-    </section>
+</section>
 
     <!-- Footer -->
     <footer class="footer">
