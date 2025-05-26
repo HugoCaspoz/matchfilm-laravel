@@ -23,13 +23,31 @@ document.addEventListener("DOMContentLoaded", () => {
     profileForm.addEventListener("submit", (event) => {
       let isValid = true
 
+      // Validar nombre
+      const nameInput = document.getElementById("name")
+      if (nameInput && nameInput.value.trim().length < 2) {
+        showInputError(nameInput, "El nombre debe tener al menos 2 caracteres")
+        isValid = false
+      } else if (nameInput) {
+        clearInputError(nameInput)
+      }
+
       // Validar nombre de usuario
       const usernameInput = document.getElementById("username")
       if (usernameInput && usernameInput.value.trim().length < 5) {
         showInputError(usernameInput, "El nombre de usuario debe tener al menos 5 caracteres")
         isValid = false
-      } else {
+      } else if (usernameInput) {
         clearInputError(usernameInput)
+      }
+
+      // Validar biografía
+      const bioInput = document.getElementById("bio")
+      if (bioInput && bioInput.value.trim().length > 500) {
+        showInputError(bioInput, "La biografía no puede tener más de 500 caracteres")
+        isValid = false
+      } else if (bioInput) {
+        clearInputError(bioInput)
       }
 
       // Validar contraseña si se ha ingresado
@@ -59,7 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Confirmación para eliminar cuenta
   const deleteAccountBtn = document.getElementById("delete-account-btn")
   if (deleteAccountBtn) {
-    deleteAccountBtn.addEventListener("click", () => {
+    deleteAccountBtn.addEventListener("click", (event) => {
       if (!confirm("¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer.")) {
         event.preventDefault()
       }
@@ -68,22 +86,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Funciones auxiliares
   function showInputError(input, message) {
-    const formGroup = input.closest(".form-group")
+    const formGroup = input.closest(".form-group") || input.closest(".mb-3") || input.parentElement
     if (formGroup) {
-      const errorElement = formGroup.querySelector(".error-message") || document.createElement("div")
+      // Remover error anterior si existe
+      const existingError = formGroup.querySelector(".error-message")
+      if (existingError) {
+        existingError.remove()
+      }
+
+      const errorElement = document.createElement("div")
       errorElement.className = "error-message text-danger mt-1"
       errorElement.textContent = message
-
-      if (!formGroup.querySelector(".error-message")) {
-        formGroup.appendChild(errorElement)
-      }
+      formGroup.appendChild(errorElement)
 
       input.classList.add("is-invalid")
     }
   }
 
   function clearInputError(input) {
-    const formGroup = input.closest(".form-group")
+    const formGroup = input.closest(".form-group") || input.closest(".mb-3") || input.parentElement
     if (formGroup) {
       const errorElement = formGroup.querySelector(".error-message")
       if (errorElement) {
@@ -112,6 +133,24 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  function showFormSuccess(message) {
+    const alertContainer = document.getElementById("alert-container")
+    if (alertContainer) {
+      const alert = document.createElement("div")
+      alert.className = "alert alert-success alert-dismissible fade show"
+      alert.innerHTML = `
+                <strong>${message}</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `
+
+      alertContainer.innerHTML = ""
+      alertContainer.appendChild(alert)
+
+      // Scroll to the top to show the success message
+      window.scrollTo({ top: 0, behavior: "smooth" })
+    }
+  }
+
   // Manejar notificaciones
   const markAsReadButtons = document.querySelectorAll(".mark-as-read")
   if (markAsReadButtons.length > 0) {
@@ -134,6 +173,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (response.ok) {
               // Animar la desaparición de la notificación
               if (notificationCard) {
+                notificationCard.style.transition = "opacity 0.3s ease"
                 notificationCard.style.opacity = "0"
                 setTimeout(() => {
                   notificationCard.remove()
@@ -148,6 +188,8 @@ document.addEventListener("DOMContentLoaded", () => {
                   }
                 }, 300)
               }
+            } else {
+              console.error("Error al marcar notificación como leída")
             }
           })
           .catch((error) => console.error("Error:", error))
@@ -160,36 +202,64 @@ document.addEventListener("DOMContentLoaded", () => {
   if (btnAgregarAmigo) {
     btnAgregarAmigo.addEventListener("click", () => {
       const nombreAmigo = document.getElementById("nombreAmigo").value.trim()
-      if (nombreAmigo.length >= 5) {
-        agregarAmigo(nombreAmigo)
-      } else {
-        const usernameError = document.getElementById("usernameError")
-        if (usernameError) {
-          usernameError.textContent = "El nombre de usuario debe tener al menos 5 letras."
-          usernameError.style.color = "red"
-        }
+      const usernameError = document.getElementById("usernameError")
+      
+      // Limpiar errores previos
+      usernameError.textContent = ""
+      
+      if (nombreAmigo.length < 5) {
+        usernameError.textContent = "El nombre de usuario debe tener al menos 5 caracteres."
+        return
       }
+      
+      if (nombreAmigo.length > 255) {
+        usernameError.textContent = "El nombre de usuario es demasiado largo."
+        return
+      }
+      
+      agregarAmigo(nombreAmigo)
     })
   }
 
-  // Validación del nombre de amigo
+  // Validación en tiempo real del nombre de amigo
   const nombreAmigoInput = document.getElementById("nombreAmigo")
   if (nombreAmigoInput) {
-    nombreAmigoInput.addEventListener("blur", function () {
+    nombreAmigoInput.addEventListener("input", function () {
       const nombreAmigo = this.value.trim()
       const usernameError = document.getElementById("usernameError")
 
-      if (nombreAmigo.length < 5) {
-        usernameError.textContent = "El nombre de usuario debe tener al menos 5 letras."
+      if (nombreAmigo.length > 0 && nombreAmigo.length < 5) {
+        usernameError.textContent = "El nombre de usuario debe tener al menos 5 caracteres."
+        usernameError.style.color = "red"
+      } else if (nombreAmigo.length > 255) {
+        usernameError.textContent = "El nombre de usuario es demasiado largo."
         usernameError.style.color = "red"
       } else {
         usernameError.textContent = ""
+      }
+    })
+
+    // Permitir enviar con Enter
+    nombreAmigoInput.addEventListener("keypress", function(event) {
+      if (event.key === "Enter") {
+        event.preventDefault()
+        const btnAgregarAmigo = document.getElementById("btnAgregarAmigo")
+        if (btnAgregarAmigo) {
+          btnAgregarAmigo.click()
+        }
       }
     })
   }
 
   function agregarAmigo(nombreAmigo) {
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+    const btnAgregarAmigo = document.getElementById("btnAgregarAmigo")
+    
+    // Deshabilitar botón durante la solicitud
+    if (btnAgregarAmigo) {
+      btnAgregarAmigo.disabled = true
+      btnAgregarAmigo.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Enviando...'
+    }
 
     fetch("/friends/request", {
       method: "POST",
@@ -210,27 +280,40 @@ document.addEventListener("DOMContentLoaded", () => {
         })
       })
       .then((data) => {
-        const alertContainer = document.getElementById("alert-container")
-        if (alertContainer) {
-          alertContainer.innerHTML = `
-            <div class="alert alert-success alert-dismissible fade show text-center" role="alert">
-                <strong>amigo agregada correctamente!</strong>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>`
+        showFormSuccess("Solicitud de amistad enviada correctamente!")
+        
+        // Limpiar el formulario
+        const nombreAmigoInput = document.getElementById("nombreAmigo")
+        if (nombreAmigoInput) {
+          nombreAmigoInput.value = ""
         }
+        
+        // Recargar la página después de un breve delay
         setTimeout(() => {
           window.location.reload()
         }, 2000)
       })
       .catch((error) => {
-        const alertContainer = document.getElementById("alert-container")
-        if (alertContainer) {
-          alertContainer.innerHTML = `
-            <div class="alert alert-danger alert-dismissible fade show text-center" role="alert">
-                <strong>${error.message}</strong>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>`
+        showFormError(error.message)
+      })
+      .finally(() => {
+        // Rehabilitar botón
+        if (btnAgregarAmigo) {
+          btnAgregarAmigo.disabled = false
+          btnAgregarAmigo.innerHTML = '<i class="fas fa-user-plus me-2"></i>Enviar solicitud'
         }
       })
   }
+
+  // Confirmación para eliminar amigos
+  const removeFriendForms = document.querySelectorAll('form[action*="friends/remove"]')
+  removeFriendForms.forEach(form => {
+    form.addEventListener('submit', function(event) {
+      event.preventDefault()
+      
+      if (confirm('¿Estás seguro de que quieres eliminar esta pareja? Esta acción no se puede deshacer.')) {
+        this.submit()
+      }
+    })
+  })
 })

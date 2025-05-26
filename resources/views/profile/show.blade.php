@@ -36,6 +36,9 @@
                                     <h1>{{ $user->name }}</h1>
                                     <p>{{ '@' . $user->username }}</p>
                                     <p class="text-muted">{{ $user->email }}</p>
+                                    @if($user->bio)
+                                        <p class="bio-text">{{ $user->bio }}</p>
+                                    @endif
                                     <a href="{{ route('profile.edit') }}" class="btn btn-primary mt-3">
                                         <i class="fas fa-edit me-2"></i>Editar Perfil
                                     </a>
@@ -44,16 +47,16 @@
                             
                             <div class="profile-stats">
                                 <div class="stat-item">
-                                    <h3>{{ $user->movieLikes()->where('liked', true)->count() }}</h3>
+                                    <h3>{{ $stats['liked_movies'] }}</h3>
                                     <p>Películas que te gustan</p>
                                 </div>
                                 <div class="stat-item">
-                                    <h3>{{ $user->initiatedMatches()->count() + $user->receivedMatches()->count() }}</h3>
+                                    <h3>{{ $stats['total_matches'] }}</h3>
                                     <p>Matches totales</p>
                                 </div>
                                 <div class="stat-item">
-                                    <h3>{{ $user->friends()->count() }}</h3>
-                                    <p>Amigos</p>
+                                    <h3>{{ $stats['friends_count'] }}</h3>
+                                    <p>{{ $stats['friends_count'] == 1 ? 'Amigo' : 'Amigos' }}</p>
                                 </div>
                             </div>
                         </div>
@@ -65,26 +68,6 @@
                         <h2>Mi Pareja</h2>
                         <div class="card partner-card">
                             <div id="amigo">
-                                @php
-                                    // Verificar si hay solicitudes pendientes
-                                    $pendingRequests = \App\Models\Friend::where('friend_id', Auth::id())
-                                                        ->where('status', 'pending')
-                                                        ->with('user')
-                                                        ->get();
-                                    
-                                    // Obtener amigos aceptados
-                                    $friends = \App\Models\Friend::where(function($query) use ($user) {
-                                        $query->where('user_id', $user->id)
-                                            ->orWhere('friend_id', $user->id);
-                                    })
-                                    ->where('status', 'accepted')
-                                    ->get()
-                                    ->map(function($friendship) use ($user) {
-                                        $friendId = $friendship->user_id == $user->id ? $friendship->friend_id : $friendship->user_id;
-                                        return \App\Models\User::find($friendId);
-                                    });
-                                @endphp
-                                
                                 @if($pendingRequests->isNotEmpty())
                                     <div class="mb-4">
                                         <h5 class="card-title">Solicitudes pendientes</h5>
@@ -108,20 +91,45 @@
                                     </div>
                                 @endif
                                 
-                                @if($friends->isEmpty())
+                                @if($acceptedFriends->isEmpty())
                                     <h5 class="card-title">No tienes pareja</h5>
-                                    <input type="text" id="nombreAmigo" class="form-control" placeholder="Nombre de usuario">
-                                    <p id="usernameError"></p>
-                                    <button type="button" id="btnAgregarAmigo" class="btn btn-primary">Enviar solicitud</button>
+                                    <div class="add-friend-form">
+                                        <input type="text" id="nombreAmigo" class="form-control mb-2" placeholder="Nombre de usuario" maxlength="255">
+                                        <p id="usernameError" class="text-danger"></p>
+                                        <button type="button" id="btnAgregarAmigo" class="btn btn-primary">
+                                            <i class="fas fa-user-plus me-2"></i>Enviar solicitud
+                                        </button>
+                                    </div>
                                 @else
-                                    @foreach($friends as $friend)
-                                        <h5 class="card-title"><b>{{ $friend->username ?? $friend->name }}</b></h5>
-                                        <form action="{{ route('friends.remove', $friend->id) }}" method="POST">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger">Eliminar Pareja</button>
-                                        </form>
+                                    <h5 class="card-title">Tus parejas</h5>
+                                    @foreach($acceptedFriends as $friend)
+                                        <div class="friend-item mb-3">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="friend-info">
+                                                    <h6 class="mb-1"><b>{{ $friend->username ?? $friend->name }}</b></h6>
+                                                    <small class="text-muted">{{ $friend->email }}</small>
+                                                </div>
+                                                <form action="{{ route('friends.remove', $friend->id) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-sm btn-danger" 
+                                                            onclick="return confirm('¿Estás seguro de que quieres eliminar esta pareja?')">
+                                                        <i class="fas fa-user-times me-1"></i>Eliminar
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
                                     @endforeach
+                                    
+                                    <!-- Formulario para agregar más amigos -->
+                                    <div class="add-friend-form mt-4">
+                                        <h6>Agregar nueva pareja</h6>
+                                        <input type="text" id="nombreAmigo" class="form-control mb-2" placeholder="Nombre de usuario" maxlength="255">
+                                        <p id="usernameError" class="text-danger"></p>
+                                        <button type="button" id="btnAgregarAmigo" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-user-plus me-2"></i>Enviar solicitud
+                                        </button>
+                                    </div>
                                 @endif
                             </div>
                         </div>
@@ -132,10 +140,6 @@
             <div class="notifications-section">
                 <h2>Notificaciones</h2>
                 <div class="notification-list">
-                    @php
-                        $notifications = $user->notifications()->where('read', false)->with('fromUser')->orderBy('created_at', 'desc')->get();
-                    @endphp
-                    
                     @if($notifications->isEmpty())
                         <p class="text-center text-white-50">No tienes notificaciones</p>
                     @else
@@ -145,22 +149,22 @@
                                     <h5 class="card-title">
                                         <b>
                                             @if($notification->type == 'match')
-                                                <i class="fas fa-heart me-2"></i>
+                                                <i class="fas fa-heart me-2 text-danger"></i>
                                             @elseif($notification->type == 'friend_request')
-                                                <i class="fas fa-user-plus me-2"></i>
+                                                <i class="fas fa-user-plus me-2 text-primary"></i>
                                             @elseif($notification->type == 'friend_accepted')
-                                                <i class="fas fa-user-check me-2"></i>
+                                                <i class="fas fa-user-check me-2 text-success"></i>
                                             @else
-                                                <i class="fas fa-bell me-2"></i>
+                                                <i class="fas fa-bell me-2 text-info"></i>
                                             @endif
                                             {{ $notification->message }}
                                         </b>
                                     </h5>
                                     <p class="card-text">
-                                        <small>{{ $notification->created_at->diffForHumans() }}</small>
+                                        <small class="text-muted">{{ $notification->created_at->diffForHumans() }}</small>
                                     </p>
                                     <button type="button" class="btn btn-primary btn-sm mark-as-read" data-notification-id="{{ $notification->id }}">
-                                        Marcar como leída
+                                        <i class="fas fa-check me-1"></i>Marcar como leída
                                     </button>
                                 </div>
                             </div>
