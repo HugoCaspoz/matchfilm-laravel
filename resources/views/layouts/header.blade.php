@@ -8,7 +8,14 @@
                 <span class="logo-text">MatchFilm</span>
             </a>
 
-            <div class="nav-links">
+            <!-- Mobile menu button -->
+            <button class="mobile-menu-btn" type="button" id="mobileMenuBtn" aria-label="Toggle navigation">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
+
+            <div class="nav-links" id="navLinks">
                 <a href="{{ route('movies.index') }}" class="nav-link {{ request()->routeIs('movies.index') ? 'active' : '' }}" title="Descubrir películas">
                     <i class="fas fa-film"></i>
                     <span class="nav-text">Descubrir</span>
@@ -23,9 +30,29 @@
                     <i class="fas fa-user"></i>
                     <span class="nav-text">Perfil</span>
                 </a>
+
+                <!-- Mobile user actions -->
+                <div class="mobile-user-actions">
+                    <div class="mobile-user-info">
+                        <i class="fas fa-user-circle"></i>
+                        <span>{{ Auth::user()->username ?? Auth::user()->name ?? 'Usuario' }}</span>
+                    </div>
+                    <a href="{{ route('profile.show') }}" class="mobile-nav-link">
+                        <i class="fas fa-user-cog"></i>Mi perfil
+                    </a>
+                    <a href="{{ route('profile.edit') }}" class="mobile-nav-link">
+                        <i class="fas fa-cog"></i>Configuración
+                    </a>
+                    <form method="POST" action="{{ route('logout') }}" class="mobile-logout-form">
+                        @csrf
+                        <button type="submit" class="mobile-nav-link logout-btn">
+                            <i class="fas fa-sign-out-alt"></i>Cerrar sesión
+                        </button>
+                    </form>
+                </div>
             </div>
 
-            <div class="nav-actions">
+            <div class="nav-actions desktop-only">
                 <div class="dropdown">
                     <button class="btn-user dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fas fa-user-circle"></i>

@@ -1,87 +1,116 @@
-document.addEventListener("DOMContentLoaded", () => {
-  // Verificar si el usuario está logueado
-  const token = localStorage.getItem("token")
-  const username = localStorage.getItem("username")
-  const userDropdown = document.getElementById("userDropdown")
-  const navActions = document.querySelector(".nav-actions")
+// ===== FUNCIONALIDAD MÓVIL =====
 
-  // Importar Bootstrap
-  const bootstrap = window.bootstrap
+// Mobile menu functionality
+const mobileMenuBtn = document.getElementById("mobileMenuBtn")
+const navLinks = document.getElementById("navLinks")
+const body = document.body
 
-  // Marcar el enlace activo según la página actual
-  const currentPage = window.location.pathname
-  const navLinks = document.querySelectorAll(".nav-link")
+if (mobileMenuBtn && navLinks) {
+  mobileMenuBtn.addEventListener("click", () => {
+    // Toggle active classes
+    mobileMenuBtn.classList.toggle("active")
+    navLinks.classList.toggle("active")
+    body.classList.toggle("menu-open")
+  })
 
-  navLinks.forEach((link) => {
-    const href = link.getAttribute("href")
-    if (href && currentPage.includes(href.split("/").pop())) {
-      link.classList.add("active")
+  // Close menu when clicking on a nav link
+  const navLinkElements = navLinks.querySelectorAll(".nav-link, .mobile-nav-link")
+  navLinkElements.forEach((link) => {
+    link.addEventListener("click", () => {
+      mobileMenuBtn.classList.remove("active")
+      navLinks.classList.remove("active")
+      body.classList.remove("menu-open")
+    })
+  })
+
+  // Close menu when clicking outside
+  document.addEventListener("click", (event) => {
+    if (!mobileMenuBtn.contains(event.target) && !navLinks.contains(event.target)) {
+      mobileMenuBtn.classList.remove("active")
+      navLinks.classList.remove("active")
+      body.classList.remove("menu-open")
     }
   })
 
-  // Efecto de scroll para el header
-  window.addEventListener("scroll", () => {
-    const header = document.querySelector(".app-header")
-    if (header) {
-      if (window.scrollY > 10) {
-        header.classList.add("scrolled")
-      } else {
-        header.classList.remove("scrolled")
-      }
+  // Close menu on escape key
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      mobileMenuBtn.classList.remove("active")
+      navLinks.classList.remove("active")
+      body.classList.remove("menu-open")
     }
   })
 
-  // Inicializar dropdowns de Bootstrap
-  const dropdownElementList = [].slice.call(document.querySelectorAll(".dropdown-toggle"))
-  if (typeof bootstrap !== "undefined") {
-    const dropdownList = dropdownElementList.map((dropdownToggleEl) => new bootstrap.Dropdown(dropdownToggleEl))
-  }
+  // Handle window resize
+  window.addEventListener("resize", () => {
+    if (window.innerWidth > 768) {
+      mobileMenuBtn.classList.remove("active")
+      navLinks.classList.remove("active")
+      body.classList.remove("menu-open")
+    }
+  })
+}
 
-  // Verificar notificaciones no leídas
-  const checkUnreadNotifications = () => {
-    if (document.querySelector('meta[name="csrf-token"]')) {
-      fetch("/notifications/count")
-        .then((response) => response.json())
-        .then((data) => {
-          const notificationLink = document.querySelector('a[href*="notifications"]')
-          if (notificationLink && data.count > 0) {
-            // Añadir indicador de notificaciones no leídas
-            if (!notificationLink.querySelector(".notification-badge")) {
-              const badge = document.createElement("span")
-              badge.className = "notification-badge"
-              badge.textContent = data.count
-              notificationLink.appendChild(badge)
-            } else {
-              notificationLink.querySelector(".notification-badge").textContent = data.count
-            }
-          }
-        })
-        .catch((error) => console.error("Error al verificar notificaciones:", error))
+// Enhanced scroll effect for mobile
+let lastScrollTop = 0
+const header = document.querySelector(".app-header")
+
+window.addEventListener("scroll", () => {
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+
+  // Only hide header on mobile when scrolling down
+  if (window.innerWidth <= 768) {
+    if (scrollTop > lastScrollTop && scrollTop > 100) {
+      // Scrolling down
+      header.style.transform = "translateY(-100%)"
+    } else {
+      // Scrolling up
+      header.style.transform = "translateY(0)"
     }
   }
 
-  // Si el usuario está autenticado, verificar notificaciones
-  if (document.querySelector('a[href*="notifications"]')) {
-    checkUnreadNotifications()
-    // Verificar cada 30 segundos
-    setInterval(checkUnreadNotifications, 30000)
+  // Original scroll effect
+  if (scrollTop > 10) {
+    header.classList.add("scrolled")
+  } else {
+    header.classList.remove("scrolled")
   }
 
-  // Función para mostrar alertas
-  function showAlert(message) {
-    const alertContainer = document.createElement("div")
-    alertContainer.className = "alert-container"
-    alertContainer.innerHTML = `
-            <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        `
-    document.body.appendChild(alertContainer)
-
-    // Eliminar la alerta después de 5 segundos
-    setTimeout(() => {
-      alertContainer.remove()
-    }, 5000)
-  }
+  lastScrollTop = scrollTop
 })
+
+// Touch gestures for mobile menu
+let touchStartX = 0
+let touchEndX = 0
+
+document.addEventListener("touchstart", (event) => {
+  touchStartX = event.changedTouches[0].screenX
+})
+
+document.addEventListener("touchend", (event) => {
+  touchEndX = event.changedTouches[0].screenX
+  handleSwipe()
+})
+
+function handleSwipe() {
+  const swipeThreshold = 50
+  const swipeDistance = touchEndX - touchStartX
+
+  // Swipe right to open menu (only if menu is closed and swipe starts from left edge)
+  if (swipeDistance > swipeThreshold && touchStartX < 50 && navLinks && !navLinks.classList.contains("active")) {
+    if (mobileMenuBtn) {
+      mobileMenuBtn.classList.add("active")
+      navLinks.classList.add("active")
+      body.classList.add("menu-open")
+    }
+  }
+
+  // Swipe left to close menu (only if menu is open)
+  if (swipeDistance < -swipeThreshold && navLinks && navLinks.classList.contains("active")) {
+    if (mobileMenuBtn) {
+      mobileMenuBtn.classList.remove("active")
+      navLinks.classList.remove("active")
+      body.classList.remove("menu-open")
+    }
+  }
+}
