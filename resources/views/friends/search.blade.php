@@ -11,7 +11,7 @@
     </x-slot>
 
     <div class="container py-4">
-        <div id="alert">
+        <div id="alert-container">
             @if (session('success'))
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
                     {{ session('success') }}
@@ -66,7 +66,7 @@
                                                 @if(isset($user->is_friend) && $user->is_friend)
                                                     <span class="badge bg-success">Ya es tu amigo</span>
                                                 @else
-                                                    <button type="button" onclick="agregarAmigo('{{ $user->id }}')" class="btn" style="background-color: #ab9079; color: white;">
+                                                    <button type="button" onclick="agregarAmigo('{{ $user->id }}')" class="btn add-friend-btn" style="background-color: #ab9079; color: white;" data-user-id="{{ $user->id }}">
                                                         <i class="fas fa-user-plus me-1"></i> Agregar
                                                     </button>
                                                 @endif
@@ -87,4 +87,12 @@
             </div>
         </div>
     </div>
+
+    @push('styles')
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    @endpush
+
+    @push('scripts')
+    <script src="{{ asset('js/friends.js') }}"></script>
+    @endpush
 </x-app-layout>
