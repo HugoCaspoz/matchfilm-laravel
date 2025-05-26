@@ -12,43 +12,22 @@ class Friend extends Model
     protected $fillable = [
         'user_id',
         'friend_id',
-        'status'
-    ];
-
-    protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
+        'status', // 'pending', 'accepted', 'rejected'
     ];
 
     /**
-     * Get the user who initiated the friendship.
+     * Get the user that owns the friend request.
      */
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class);
     }
 
     /**
-     * Get the user who received the friendship request.
+     * Get the friend user.
      */
     public function friend()
     {
         return $this->belongsTo(User::class, 'friend_id');
-    }
-
-    /**
-     * Scope for accepted friendships.
-     */
-    public function scopeAccepted($query)
-    {
-        return $query->where('status', 'accepted');
-    }
-
-    /**
-     * Scope for pending friendships.
-     */
-    public function scopePending($query)
-    {
-        return $query->where('status', 'pending');
     }
 }

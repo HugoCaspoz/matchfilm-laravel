@@ -41,15 +41,6 @@ document.addEventListener("DOMContentLoaded", () => {
         clearInputError(usernameInput)
       }
 
-      // Validar biografía
-      const bioInput = document.getElementById("bio")
-      if (bioInput && bioInput.value.trim().length > 500) {
-        showInputError(bioInput, "La biografía no puede tener más de 500 caracteres")
-        isValid = false
-      } else if (bioInput) {
-        clearInputError(bioInput)
-      }
-
       // Validar contraseña si se ha ingresado
       const passwordInput = document.getElementById("password")
       const passwordConfirmInput = document.getElementById("password_confirmation")

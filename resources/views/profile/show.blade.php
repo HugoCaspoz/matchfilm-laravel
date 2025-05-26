@@ -36,9 +36,6 @@
                                     <h1>{{ $user->name }}</h1>
                                     <p>{{ '@' . $user->username }}</p>
                                     <p class="text-muted">{{ $user->email }}</p>
-                                    @if($user->bio)
-                                        <p class="bio-text">{{ $user->bio }}</p>
-                                    @endif
                                     <a href="{{ route('profile.edit') }}" class="btn btn-primary mt-3">
                                         <i class="fas fa-edit me-2"></i>Editar Perfil
                                     </a>
@@ -74,7 +71,7 @@
                                         @foreach($pendingRequests as $request)
                                             <div class="card mb-2" style="background-color: rgba(255, 255, 255, 0.1);">
                                                 <div class="card-body">
-                                                    <h6 class="card-subtitle">{{ $request->user->username ?? $request->user->name }}</h6>
+                                                    <h6 class="card-subtitle">{{ $request->username ?? $request->name }}</h6>
                                                     <div class="d-flex mt-2">
                                                         <form action="{{ route('friends.accept', $request->id) }}" method="POST" class="me-2">
                                                             @csrf
