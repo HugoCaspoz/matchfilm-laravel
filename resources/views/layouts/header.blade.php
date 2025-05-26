@@ -18,18 +18,38 @@
             <div class="nav-links" id="navLinks">
                 <a href="{{ route('movies.index') }}" class="nav-link {{ request()->routeIs('movies.index') ? 'active' : '' }}" title="Descubrir películas">
                     <i class="fas fa-film"></i>
-                    <span class="nav-text">Descubrir</span>
+                    <span class="nav-text">Películas</span>
                 </a>
 
-                <a href="{{ route('movies.likes') }}" class="nav-link {{ request()->routeIs('movies.likes') ? 'active' : '' }}" title="Mis likes">
+                @auth
+                <a href="{{ route('favorites.index') }}" class="nav-link {{ request()->routeIs('favorites.*') ? 'active' : '' }}" title="Mis favoritas">
                     <i class="fas fa-heart"></i>
-                    <span class="nav-text">Likes</span>
+                    <span class="nav-text">Favoritas</span>
+                </a>
+
+                <a href="{{ route('matches.index') }}" class="nav-link {{ request()->routeIs('matches.index') ? 'active' : '' }}" title="Mis matches">
+                    <i class="fas fa-star"></i>
+                    <span class="nav-text">Matches</span>
+                </a>
+
+                <a href="{{ route('friends.index') }}" class="nav-link {{ request()->routeIs('friends.index') ? 'active' : '' }}" title="Mis amigos">
+                    <i class="fas fa-users"></i>
+                    <span class="nav-text">Amigos</span>
+                </a>
+
+                <a href="{{ route('notifications.index') }}" class="nav-link {{ request()->routeIs('notifications.index') ? 'active' : '' }}" title="Notificaciones">
+                    <i class="fas fa-bell"></i>
+                    <span class="nav-text">Notificaciones</span>
+                    @if(isset($unreadNotifications) && $unreadNotifications > 0)
+                        <span class="notification-badge">{{ $unreadNotifications }}</span>
+                    @endif
                 </a>
 
                 <a href="{{ route('profile.show') }}" class="nav-link {{ request()->routeIs('profile.show') ? 'active' : '' }}" title="Mi perfil">
                     <i class="fas fa-user"></i>
                     <span class="nav-text">Perfil</span>
                 </a>
+                @endauth
 
                 <!-- Mobile user actions -->
                 <div class="mobile-user-actions">
