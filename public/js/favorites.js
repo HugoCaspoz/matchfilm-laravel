@@ -151,9 +151,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // Event Listeners
   if (searchButton) {
     searchButton.addEventListener("click", () => {
-      searchBar.style.display = searchBar.style.display === "none" || searchBar.style.display === "" ? "block" : "none"
+        // En lugar de mostrar/ocultar, hacer scroll al buscador
+        const searchInput = document.getElementById("searchInput");
+        if (searchInput) {
+            searchInput.focus();
+            searchInput.scrollIntoView({ behavior: 'smooth' });
+        }
     })
-  }
+}
 
   if (searchActionButton) {
     searchActionButton.addEventListener("click", searchMovies)

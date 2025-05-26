@@ -5,9 +5,6 @@
                 {{ __('Mis Películas Favoritas') }}
             </h2>
             <div class="d-flex">
-                <button id="searchButton" class="btn me-2" style="background-color: #586294; color: white;">
-                    <i class="fas fa-search me-2"></i> Buscar
-                </button>
                 <a href="{{ route('favorites.search') }}" class="btn" style="background-color: #ab9079; color: white;">
                     <i class="fas fa-search-plus me-2"></i> Búsqueda Avanzada
                 </a>
@@ -33,31 +30,42 @@
                 @endif
             </div>
 
-            <!-- Barra de búsqueda desplegable -->
-            <div class="search-container">
-                <div class="search-bar">
-                    <div class="search-input-group">
-                        <input type="text" class="form-control" id="searchInput" placeholder="Buscar películas...">
-                        <button class="btn btn-primary" id="searchActionButton">
-                            <i class="fas fa-search"></i>
+            <!-- Barra de búsqueda SIEMPRE VISIBLE -->
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                <div class="p-6">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Buscar películas para añadir a favoritos</h5>
+                        <button id="searchButton" class="btn btn-sm" style="background-color: #586294; color: white;">
+                            <i class="fas fa-search me-2"></i> Buscar
                         </button>
                     </div>
-                    <div id="resultadosBusqueda" class="bg-white p-3 rounded"></div>
+                    
+                    <!-- Barra de búsqueda -->
+                    <div class="search-bar" style="display: block;"> <!-- Cambiado: siempre visible -->
+                        <div class="search-input-group">
+                            <input type="text" class="form-control" id="searchInput" placeholder="Buscar películas para añadir a favoritos...">
+                            <button class="btn" style="background-color: #586294; color: white;" id="searchActionButton">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                        <div id="resultadosBusqueda" class="bg-white p-3 rounded mt-3"></div>
+                    </div>
                 </div>
             </div>
 
+            <!-- Lista de películas favoritas -->
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     @if(count($movies) === 0)
                         <div class="text-center py-8 no-results">
                             <i class="fas fa-heart text-4xl text-gray-400 mb-4"></i>
                             <h3 class="text-xl font-semibold mb-2">Aún no tienes películas favoritas</h3>
-                            <p class="text-gray-500 mb-4">Explora películas y marca las que te gusten para verlas aquí.</p>
-                            <a href="{{ route('favorites.search') }}" class="inline-flex items-center px-4 py-2 bg-red-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-600 focus:bg-red-600 active:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                                Buscar Películas
-                            </a>
+                            <p class="text-gray-500 mb-4">Usa el buscador de arriba para encontrar películas y marcarlas como favoritas.</p>
                         </div>
                     @else
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="mb-0">Tus películas favoritas ({{ count($movies) }})</h5>
+                        </div>
                         <div id="resultados" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                             @foreach($movies as $movie)
                                 <div class="movie-card">
