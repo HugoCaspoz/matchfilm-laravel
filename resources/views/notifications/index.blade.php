@@ -72,14 +72,26 @@
                                     
                                     @if($isProcessed)
                                         <div class="processed-status">
-                                            @if($action === 'accepted')
-                                                <span class="status-badge accepted">
-                                                    <i class="fas fa-check"></i> Invitación aceptada
-                                                </span>
-                                            @elseif($action === 'declined')
-                                                <span class="status-badge declined">
-                                                    <i class="fas fa-times"></i> Invitación declinada
-                                                </span>
+                                            @if($notification->type == 'friend_request')
+                                                @if($action === 'accepted')
+                                                    <span class="status-badge accepted">
+                                                        <i class="fas fa-check"></i> Solicitud aceptada
+                                                    </span>
+                                                @elseif($action === 'rejected')
+                                                    <span class="status-badge declined">
+                                                        <i class="fas fa-times"></i> Solicitud rechazada
+                                                    </span>
+                                                @endif
+                                            @elseif($notification->type == 'movie_invitation')
+                                                @if($action === 'accepted')
+                                                    <span class="status-badge accepted">
+                                                        <i class="fas fa-check"></i> Invitación aceptada
+                                                    </span>
+                                                @elseif($action === 'declined')
+                                                    <span class="status-badge declined">
+                                                        <i class="fas fa-times"></i> Invitación declinada
+                                                    </span>
+                                                @endif
                                             @endif
                                         </div>
                                     @endif
@@ -122,7 +134,7 @@
                                     </div>
                                 </div>
                                 
-                                <!-- Acciones -->
+                                <!-- Acciones para invitaciones de películas -->
                                 <div class="notification-actions">
                                     @if($notification->type == 'movie_invitation' && !$isProcessed)
                                         <button onclick="acceptInvitation({{ $notification->id }})" class="btn btn-success">
@@ -147,9 +159,10 @@
                                     @endif
                                 </div>
                             @else
-                                <!-- Notificaciones estándar -->
+                                <!-- Notificaciones estándar (incluyendo solicitudes de amistad) -->
                                 <div class="notification-actions">
-                                    @if($notification->type == 'friend_request' && $data && isset($data['friendship_id']))
+                                    @if($notification->type == 'friend_request' && $data && isset($data['friendship_id']) && !$isProcessed)
+                                        <!-- Botones para solicitudes de amistad NO procesadas -->
                                         <form action="{{ route('friends.accept', $data['friendship_id']) }}" method="POST" class="inline">
                                             @csrf
                                             <button type="submit" class="btn btn-success">
@@ -162,8 +175,15 @@
                                                 <i class="fas fa-times"></i> Rechazar
                                             </button>
                                         </form>
-                                    @elseif(!$notification->read)
-                                        <form action="{{ route('notifications.read', $notification->id) }}" method="POST">
+                                    @elseif($notification->type == 'friend_accepted')
+                                        <!-- Para notificaciones de amistad aceptada, mostrar botón para ir a amigos -->
+                                        <a href="{{ route('friends.index') }}" class="btn btn-primary">
+                                            <i class="fas fa-users"></i> Ver mis amigos
+                                        </a>
+                                    @endif
+                                    
+                                    @if(!$notification->read)
+                                        <form action="{{ route('notifications.read', $notification->id) }}" method="POST" class="inline">
                                             @csrf
                                             <button type="submit" class="btn btn-outline">
                                                 <i class="fas fa-check"></i> Marcar como leída

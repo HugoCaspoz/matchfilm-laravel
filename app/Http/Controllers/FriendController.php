@@ -177,10 +177,11 @@ class FriendController extends Controller
                 'user_id' => $friend->id,
                 'from_user_id' => $userId,
                 'type' => 'friend_request',
-                'message' => Auth::user()->name . ' te ha enviado una solicitud de amistad.',
+                'message' => Auth::user()->name . ' te ha enviado una solicitud de pareja.',
                 'read' => false,
                 'data' => json_encode([
-                    'friendship_id' => $friendship->id
+                    'friendship_id' => $friendship->id,
+                    'processed' => false // Inicialmente no procesada
                 ]),
             ]);
 
@@ -233,15 +234,34 @@ class FriendController extends Controller
             // Aceptar la solicitud
             $friendship->status = 'accepted';
             $friendship->save();
+
+            // Marcar la notificación como leída y procesada
+            $notification = Notification::where('user_id', Auth::id())
+                                       ->where('type', 'friend_request')
+                                       ->where('data', 'LIKE', '%"friendship_id":' . $id . '%')
+                                       ->first();
+
+            if ($notification) {
+                $notification->read = true;
+                $data = json_decode($notification->data, true);
+                $data['processed'] = true;
+                $data['action'] = 'accepted';
+                $data['processed_at'] = now()->toISOString();
+                $notification->data = json_encode($data);
+                $notification->save();
+            }
         
             // Crear notificación para el remitente
             Notification::create([
                 'user_id' => $friendship->user_id,
                 'from_user_id' => Auth::id(),
                 'type' => 'friend_accepted',
-                'message' => Auth::user()->name . ' ha aceptado tu solicitud de amistad.',
+                'message' => Auth::user()->name . ' ha aceptado tu solicitud de pareja.',
                 'read' => false,
-                'data' => json_encode([]),
+                'data' => json_encode([
+                    'friendship_id' => $friendship->id,
+                    'processed' => true // Las notificaciones de aceptación ya están "procesadas"
+                ]),
             ]);
         
             return redirect()->back()->with('success', 'Solicitud de amistad aceptada correctamente.');
@@ -264,6 +284,22 @@ class FriendController extends Controller
             // Verificar que la solicitud esté pendiente
             if ($friendship->status != 'pending') {
                 return redirect()->back()->with('error', 'Esta solicitud ya ha sido procesada.');
+            }
+
+            // Marcar la notificación como leída y procesada ANTES de eliminar la amistad
+            $notification = Notification::where('user_id', Auth::id())
+                                       ->where('type', 'friend_request')
+                                       ->where('data', 'LIKE', '%"friendship_id":' . $id . '%')
+                                       ->first();
+
+            if ($notification) {
+                $notification->read = true;
+                $data = json_decode($notification->data, true);
+                $data['processed'] = true;
+                $data['action'] = 'rejected';
+                $data['processed_at'] = now()->toISOString();
+                $notification->data = json_encode($data);
+                $notification->save();
             }
         
             // Eliminar la solicitud en lugar de marcarla como rechazada
