@@ -28,6 +28,14 @@
                     @else
                         <div class="notification-list">
                             @foreach($notifications as $notification)
+                                @php
+                                    // Decodificar datos JSON de forma segura
+                                    $data = null;
+                                    if ($notification->data) {
+                                        $data = is_string($notification->data) ? json_decode($notification->data, true) : $notification->data;
+                                    }
+                                @endphp
+                                
                                 <div class="notification-item {{ $notification->read ? 'read' : 'unread' }}">
                                     <div class="notification-icon 
                                         @if($notification->type == 'match') match
@@ -53,11 +61,11 @@
                                             <span class="notification-time">{{ $notification->created_at->diffForHumans() }}</span>
                                         </div>
                                         
-                                        @if($notification->type == 'match' && isset($notification->data['movie_title']))
+                                        @if($notification->type == 'match' && $data && isset($data['movie_title']))
                                             <div class="movie-details">
                                                 <div class="movie-poster">
-                                                    @if(isset($notification->data['movie_poster']))
-                                                        <img src="{{ $notification->data['movie_poster'] }}" alt="{{ $notification->data['movie_title'] }}">
+                                                    @if(isset($data['movie_poster']) && $data['movie_poster'])
+                                                        <img src="{{ $data['movie_poster'] }}" alt="{{ $data['movie_title'] }}">
                                                     @else
                                                         <div class="w-full h-full flex items-center justify-center bg-gray-200">
                                                             <i class="fas fa-film text-gray-400"></i>
@@ -65,7 +73,7 @@
                                                     @endif
                                                 </div>
                                                 <div class="movie-info">
-                                                    <h5 class="movie-title">{{ $notification->data['movie_title'] }}</h5>
+                                                    <h5 class="movie-title">{{ $data['movie_title'] }}</h5>
                                                     <div class="notification-actions">
                                                         @if(!$notification->read)
                                                             <form action="{{ route('notifications.read', $notification->id) }}" method="POST" class="inline">
@@ -81,11 +89,11 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                        @elseif($notification->type == 'movie_invitation' && isset($notification->data['movie_title']))
+                                        @elseif($notification->type == 'movie_invitation' && $data && isset($data['movie_title']))
                                             <div class="movie-details">
                                                 <div class="movie-poster">
-                                                    @if(isset($notification->data['movie_poster']))
-                                                        <img src="{{ $notification->data['movie_poster'] }}" alt="{{ $notification->data['movie_title'] }}">
+                                                    @if(isset($data['movie_poster']) && $data['movie_poster'])
+                                                        <img src="{{ $data['movie_poster'] }}" alt="{{ $data['movie_title'] }}">
                                                     @else
                                                         <div class="w-full h-full flex items-center justify-center bg-gray-200">
                                                             <i class="fas fa-film text-gray-400"></i>
@@ -93,16 +101,22 @@
                                                     @endif
                                                 </div>
                                                 <div class="movie-info">
-                                                    <h5 class="movie-title">{{ $notification->data['movie_title'] }}</h5>
-                                                    <div class="movie-date">
-                                                        <i class="fas fa-calendar-alt"></i>
-                                                        <span>{{ \Carbon\Carbon::parse($notification->data['watch_date'])->format('d/m/Y') }}</span>
-                                                    </div>
-                                                    @if(isset($notification->data['message']) && !empty($notification->data['message']))
-                                                        <div class="movie-message">
-                                                            "{{ $notification->data['message'] }}"
+                                                    <h5 class="movie-title">{{ $data['movie_title'] }}</h5>
+                                                    
+                                                    @if(isset($data['watch_date']) && $data['watch_date'])
+                                                        <div class="movie-date">
+                                                            <i class="fas fa-calendar-alt"></i>
+                                                            <span>Fecha propuesta: {{ \Carbon\Carbon::parse($data['watch_date'])->format('d/m/Y') }}</span>
                                                         </div>
                                                     @endif
+                                                    
+                                                    @if(isset($data['message']) && !empty(trim($data['message'])))
+                                                        <div class="movie-message">
+                                                            <i class="fas fa-comment"></i>
+                                                            <span class="message-text">"{{ $data['message'] }}"</span>
+                                                        </div>
+                                                    @endif
+                                                    
                                                     <div class="notification-actions">
                                                         @if(!$notification->read)
                                                             <form action="{{ route('notifications.read', $notification->id) }}" method="POST" class="inline">
@@ -115,19 +129,22 @@
                                                         <a href="{{ route('matches.index') }}" class="btn-primary-action">
                                                             <i class="fas fa-check-circle mr-1"></i> Aceptar invitación
                                                         </a>
+                                                        <button onclick="declineInvitation({{ $notification->id }})" class="btn-mark-read">
+                                                            <i class="fas fa-times mr-1"></i> Declinar
+                                                        </button>
                                                     </div>
                                                 </div>
                                             </div>
                                         @else
                                             <div class="notification-actions">
-                                                @if($notification->type == 'friend_request' && isset($notification->data['friendship_id']))
-                                                    <form action="{{ route('friends.accept', $notification->data['friendship_id']) }}" method="POST" class="inline">
+                                                @if($notification->type == 'friend_request' && $data && isset($data['friendship_id']))
+                                                    <form action="{{ route('friends.accept', $data['friendship_id']) }}" method="POST" class="inline">
                                                         @csrf
                                                         <button type="submit" class="btn-primary-action">
                                                             <i class="fas fa-check mr-1"></i> Aceptar solicitud
                                                         </button>
                                                     </form>
-                                                    <form action="{{ route('friends.reject', $notification->data['friendship_id']) }}" method="POST" class="inline">
+                                                    <form action="{{ route('friends.reject', $data['friendship_id']) }}" method="POST" class="inline">
                                                         @csrf
                                                         <button type="submit" class="btn-mark-read">
                                                             <i class="fas fa-times mr-1"></i> Rechazar
