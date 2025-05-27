@@ -43,6 +43,20 @@
                             // Verificar si la notificación ya fue procesada
                             $isProcessed = $data && isset($data['processed']) && $data['processed'] === true;
                             $action = $data['action'] ?? null;
+                            
+                            // DEBUG: Log para ver qué está pasando en la vista
+                            if ($notification->type == 'friend_request') {
+                                \Log::info('🔍 DEBUG VISTA - Notificación friend_request:', [
+                                    'notification_id' => $notification->id,
+                                    'data_raw' => $notification->data,
+                                    'data_processed' => $data,
+                                    'data_type' => gettype($notification->data),
+                                    'has_processed_key' => isset($data['processed']),
+                                    'processed_value' => $data['processed'] ?? 'NO_EXISTE',
+                                    'isProcessed_result' => $isProcessed,
+                                    'friendship_id' => $data['friendship_id'] ?? 'NO_EXISTE'
+                                ]);
+                            }
                         @endphp
                         
                         <div class="notification-item {{ $notification->read ? 'read' : 'unread' }} {{ $isProcessed ? 'processed' : '' }}">

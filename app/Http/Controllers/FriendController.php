@@ -235,26 +235,52 @@ class FriendController extends Controller
             $friendship->status = 'accepted';
             $friendship->save();
 
-            // Log para debug
-            Log::info('Buscando notificación para marcar como procesada', [
+            // Log para debug - estado inicial
+            Log::info('=== INICIO acceptRequest ===', [
                 'user_id' => Auth::id(),
                 'friendship_id' => $id
             ]);
 
-            // Marcar la notificación como leída y procesada
+            // Buscar TODAS las notificaciones del usuario para debug
+            $allNotifications = Notification::where('user_id', Auth::id())
+                                            ->where('type', 'friend_request')
+                                            ->get();
+
+            Log::info('Todas las notificaciones de friend_request del usuario:', [
+                'count' => $allNotifications->count(),
+                'notifications' => $allNotifications->map(function($n) {
+                    return [
+                        'id' => $n->id,
+                        'data' => $n->data,
+                        'data_type' => gettype($n->data),
+                        'friendship_id_in_data' => isset($n->data['friendship_id']) ? $n->data['friendship_id'] : 'NO_EXISTE'
+                    ];
+                })->toArray()
+            ]);
+
+            // Buscar la notificación específica
             $notification = Notification::where('user_id', Auth::id())
                                        ->where('type', 'friend_request')
                                        ->whereJsonContains('data->friendship_id', (int)$id)
                                        ->first();
 
+            Log::info('Búsqueda específica de notificación:', [
+                'found' => $notification ? 'SÍ' : 'NO',
+                'search_friendship_id' => (int)$id,
+                'notification_id' => $notification ? $notification->id : null,
+                'notification_data' => $notification ? $notification->data : null
+            ]);
+
             if ($notification) {
-                Log::info('Notificación encontrada, actualizando...', [
+                Log::info('ANTES de actualizar notificación:', [
                     'notification_id' => $notification->id,
-                    'current_data' => $notification->data
+                    'read' => $notification->read,
+                    'data' => $notification->data,
+                    'processed' => isset($notification->data['processed']) ? $notification->data['processed'] : 'NO_EXISTE'
                 ]);
 
                 $notification->read = true;
-                // Trabajar directamente con el array (Laravel maneja la conversión)
+                // Trabajar directamente con el array
                 $data = $notification->data;
                 $data['processed'] = true;
                 $data['action'] = 'accepted';
@@ -262,16 +288,50 @@ class FriendController extends Controller
                 $notification->data = $data;
                 $notification->save();
 
-                Log::info('Notificación actualizada', [
+                // Verificar que se guardó correctamente
+                $notification->refresh();
+                Log::info('DESPUÉS de actualizar notificación:', [
                     'notification_id' => $notification->id,
-                    'new_data' => $notification->data
+                    'read' => $notification->read,
+                    'data' => $notification->data,
+                    'processed' => isset($notification->data['processed']) ? $notification->data['processed'] : 'NO_EXISTE'
                 ]);
             } else {
-                Log::warning('No se encontró la notificación para actualizar', [
+                Log::error('❌ NO SE ENCONTRÓ LA NOTIFICACIÓN', [
                     'user_id' => Auth::id(),
-                    'friendship_id' => $id
+                    'friendship_id' => $id,
+                    'search_type' => 'whereJsonContains'
                 ]);
+                
+                // Intentar búsqueda alternativa
+                $alternativeSearch = Notification::where('user_id', Auth::id())
+                                               ->where('type', 'friend_request')
+                                               ->get()
+                                               ->filter(function($n) use ($id) {
+                                                   return isset($n->data['friendship_id']) && $n->data['friendship_id'] == $id;
+                                               })
+                                               ->first();
+                
+                Log::info('Búsqueda alternativa:', [
+                    'found' => $alternativeSearch ? 'SÍ' : 'NO',
+                    'notification_id' => $alternativeSearch ? $alternativeSearch->id : null
+                ]);
+                
+                if ($alternativeSearch) {
+                    $notification = $alternativeSearch;
+                    $notification->read = true;
+                    $data = $notification->data;
+                    $data['processed'] = true;
+                    $data['action'] = 'accepted';
+                    $data['processed_at'] = now()->toISOString();
+                    $notification->data = $data;
+                    $notification->save();
+                    
+                    Log::info('✅ Notificación actualizada con búsqueda alternativa');
+                }
             }
+
+            Log::info('=== FIN acceptRequest ===');
         
             // Crear notificación para el remitente - usar array directamente
             Notification::create([
@@ -309,7 +369,7 @@ class FriendController extends Controller
             }
 
             // Log para debug
-            Log::info('Buscando notificación para rechazar', [
+            Log::info('=== INICIO rejectRequest ===', [
                 'user_id' => Auth::id(),
                 'friendship_id' => $id
             ]);
@@ -319,6 +379,17 @@ class FriendController extends Controller
                                        ->where('type', 'friend_request')
                                        ->whereJsonContains('data->friendship_id', (int)$id)
                                        ->first();
+
+            if (!$notification) {
+                // Búsqueda alternativa
+                $notification = Notification::where('user_id', Auth::id())
+                                           ->where('type', 'friend_request')
+                                           ->get()
+                                           ->filter(function($n) use ($id) {
+                                               return isset($n->data['friendship_id']) && $n->data['friendship_id'] == $id;
+                                           })
+                                           ->first();
+            }
 
             if ($notification) {
                 Log::info('Notificación encontrada para rechazar, actualizando...', [
@@ -335,16 +406,18 @@ class FriendController extends Controller
                 $notification->data = $data;
                 $notification->save();
 
-                Log::info('Notificación de rechazo actualizada', [
+                Log::info('✅ Notificación de rechazo actualizada', [
                     'notification_id' => $notification->id,
                     'new_data' => $notification->data
                 ]);
             } else {
-                Log::warning('No se encontró la notificación para rechazar', [
+                Log::error('❌ No se encontró la notificación para rechazar', [
                     'user_id' => Auth::id(),
                     'friendship_id' => $id
                 ]);
             }
+
+            Log::info('=== FIN rejectRequest ===');
         
             // Eliminar la solicitud en lugar de marcarla como rechazada
             $friendship->delete();
