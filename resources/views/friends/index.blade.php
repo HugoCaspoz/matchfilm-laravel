@@ -4,7 +4,7 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Mi Pareja') }}
             </h2>
-            <a href="{{ route('friends.search') }}" class="btn" style="background-color: #ab9079; color: white;">
+            <a href="{{ route('friends.search') }}" class="btn" style="background-color: #e50914; color: white;">
                 <i class="fas fa-user-plus me-2"></i> Buscar Pareja
             </a>
         </div>
@@ -91,7 +91,7 @@
                                         <div class="add-friend-form">
                                             <input type="text" id="nombreAmigo" class="form-control mb-2" placeholder="Nombre de usuario" maxlength="255">
                                             <p id="usernameError" class="text-danger"></p>
-                                            <button type="button" id="btnAgregarAmigo" class="btn" style="background-color: #ab9079; color: white;">
+                                            <button type="button" id="btnAgregarAmigo" class="btn" style="background-color: #e50914; color: white;">
                                                 <i class="fas fa-user-plus me-2"></i>Enviar solicitud de amistad
                                             </button>
                                         </div>
@@ -170,7 +170,7 @@
                                                     </div>
                                                 @endif
                                             @else
-                                                <button type="button" class="btn btn-sm mark-as-read" style="background-color: #ab9079; color: white;" data-notification-id="{{ $notification->id }}">
+                                                <button type="button" class="btn btn-sm mark-as-read" style="background-color: #e50914; color: white;" data-notification-id="{{ $notification->id }}">
                                                     <i class="fas fa-check me-1"></i>Marcar como leída
                                                 </button>
                                             @endif

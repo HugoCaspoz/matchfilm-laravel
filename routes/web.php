@@ -13,13 +13,15 @@ use Illuminate\Support\Facades\Route;
 
 // Rutas públicas
 Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::get('/movies', [MovieController::class, 'index'])->name('movies.index');
-Route::get('/movies/search', [MovieController::class, 'search'])->name('movies.search');
-Route::get('/movies/genre/{id}', [MovieController::class, 'byGenre'])->name('movies.by_genre');
-Route::get('/movies/{id}', [MovieController::class, 'show'])->name('movies.show');
 
 // Rutas protegidas (requieren autenticación)
 Route::middleware(['auth'])->group(function () {
+
+    Route::get('/movies', [MovieController::class, 'index'])->name('movies.index');
+    Route::get('/movies/search', [MovieController::class, 'search'])->name('movies.search');
+    Route::get('/movies/genre/{id}', [MovieController::class, 'byGenre'])->name('movies.by_genre');
+    Route::get('/movies/{id}', [MovieController::class, 'show'])->name('movies.show');
+
     // Perfil
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
