@@ -1,50 +1,50 @@
 // // Funcionalidad JavaScript para MatchFilm
 
 document.addEventListener('DOMContentLoaded', function() {
-//     // Inicializar tooltips de Bootstrap
-//     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-//     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-//         return new bootstrap.Tooltip(tooltipTriggerEl);
-//     });
+    // Inicializar tooltips de Bootstrap
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
     
-//     // Sistema de valoración con estrellas
-//     const ratingInputs = document.querySelectorAll('.rating-input');
-//     const ratingStars = document.querySelectorAll('.rating-star');
+    // Sistema de valoración con estrellas
+    const ratingInputs = document.querySelectorAll('.rating-input');
+    const ratingStars = document.querySelectorAll('.rating-star');
     
-//     if (ratingStars.length > 0) {
-//         ratingStars.forEach(star => {
-//             star.addEventListener('click', function() {
-//                 const value = this.getAttribute('data-value');
-//                 const ratingInput = this.closest('.rating-container').querySelector('.rating-input');
-//                 ratingInput.value = value;
+    if (ratingStars.length > 0) {
+        ratingStars.forEach(star => {
+            star.addEventListener('click', function() {
+                const value = this.getAttribute('data-value');
+                const ratingInput = this.closest('.rating-container').querySelector('.rating-input');
+                ratingInput.value = value;
                 
-//                 // Actualizar estrellas
-//                 const stars = this.closest('.rating-container').querySelectorAll('.rating-star');
-//                 stars.forEach(s => {
-//                     if (s.getAttribute('data-value') <= value) {
-//                         s.classList.remove('far');
-//                         s.classList.add('fas');
-//                     } else {
-//                         s.classList.remove('fas');
-//                         s.classList.add('far');
-//                     }
-//                 });
-//             });
-//         });
-//     }
+                // Actualizar estrellas
+                const stars = this.closest('.rating-container').querySelectorAll('.rating-star');
+                stars.forEach(s => {
+                    if (s.getAttribute('data-value') <= value) {
+                        s.classList.remove('far');
+                        s.classList.add('fas');
+                    } else {
+                        s.classList.remove('fas');
+                        s.classList.add('far');
+                    }
+                });
+            });
+        });
+    }
     
-//     // Confirmación para eliminar
-//     const deleteButtons = document.querySelectorAll('.delete-confirm');
+    // Confirmación para eliminar
+    const deleteButtons = document.querySelectorAll('.delete-confirm');
     
-//     if (deleteButtons.length > 0) {
-//         deleteButtons.forEach(button => {
-//             button.addEventListener('click', function(e) {
-//                 if (!confirm('¿Estás seguro de que quieres eliminar este elemento?')) {
-//                     e.preventDefault();
-//                 }
-//             });
-//         });
-//     }
+    if (deleteButtons.length > 0) {
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                if (!confirm('¿Estás seguro de que quieres eliminar este elemento?')) {
+                    e.preventDefault();
+                }
+            });
+        });
+    }
     
     // Cargar más películas al hacer scroll
     const movieContainer = document.getElementById('movie-container');
