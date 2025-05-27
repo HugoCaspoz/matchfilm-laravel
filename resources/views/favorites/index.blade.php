@@ -1,17 +1,4 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="d-flex justify-content-between align-items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Mis Películas Favoritas') }}
-            </h2>
-            <div class="d-flex gap-2">
-                <a href="{{ route('favorites.search') }}" class="btn btn-advanced-search">
-                    <i class="fas fa-search-plus me-2"></i> Búsqueda Avanzada
-                </a>
-            </div>
-        </div>
-    </x-slot>
-
     <div class="favorites-container">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <!-- Contenedor de alertas -->
