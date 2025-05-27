@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller
@@ -88,7 +90,22 @@ class ProfileController extends Controller
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'username' => ['required', 'string', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'username' => [
+                'required', 
+                'string', 
+                'min:5',           // Mínimo 5 caracteres
+                'max:50',          // Máximo 50 caracteres
+                Rule::unique('users')->ignore($user->id),
+                'regex:/^[a-zA-Z0-9_]+$/' // Solo letras, números y guiones bajos
+            ],
+        ], [
+            // Mensajes personalizados
+            'username.required' => 'El username es obligatorio.',
+            'username.min' => 'El username debe tener al menos 5 caracteres.',
+            'username.max' => 'El username no puede tener más de 50 caracteres.',
+            'username.unique' => 'Este username ya está en uso.',
+            'username.regex' => 'El username solo puede contener letras, números y guiones bajos.',
+            'name.required' => 'El nombre es obligatorio.',
         ]);
 
         // Preparar los datos para actualizar
@@ -101,6 +118,10 @@ class ProfileController extends Controller
         if ($request->filled('password')) {
             $request->validate([
                 'password' => ['required', 'string', 'min:8', 'confirmed'],
+            ], [
+                'password.required' => 'La contraseña es obligatoria.',
+                'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+                'password.confirmed' => 'La confirmación de contraseña no coincide.',
             ]);
 
             $dataToUpdate['password'] = Hash::make($request->password);
@@ -117,50 +138,95 @@ class ProfileController extends Controller
     public function destroy(Request $request)
     {
         $user = Auth::user();
+        $userId = $user->id;
 
         // Verificar la contraseña
         if (!Hash::check($request->password, $user->password)) {
             return back()->withErrors(['password' => 'La contraseña proporcionada no coincide con nuestros registros.']);
         }
 
-        // Eliminar la imagen de perfil si existe
-        if ($user->profile_image && Storage::disk('public')->exists($user->profile_image)) {
-            Storage::disk('public')->delete($user->profile_image);
+        Log::info('Iniciando eliminación de cuenta', ['user_id' => $userId]);
+
+        try {
+            // Eliminar la imagen de perfil si existe
+            if ($user->profile_image && Storage::disk('public')->exists($user->profile_image)) {
+                Storage::disk('public')->delete($user->profile_image);
+            }
+
+            // Cerrar sesión antes de eliminar
+            Auth::logout();
+
+            // Eliminar relaciones y el usuario usando transacción
+            DB::transaction(function() use ($userId) {
+                $this->deleteUserRelatedDataSafely($userId);
+                
+                // Eliminar el usuario
+                DB::table('users')->where('id', $userId)->delete();
+            });
+
+            Log::info('Cuenta eliminada exitosamente', ['user_id' => $userId]);
+
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect('/')->with('success', 'Cuenta eliminada correctamente.');
+
+        } catch (\Exception $e) {
+            Log::error('Error al eliminar cuenta', [
+                'user_id' => $userId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->route('profile.edit')->with('error', 'Hubo un error al eliminar tu cuenta. Por favor, inténtalo de nuevo.');
         }
+    }
 
-        // Guardar el ID del usuario
-        $userId = $user->id;
+    /**
+     * Eliminar datos relacionados del usuario de forma segura
+     */
+    private function deleteUserRelatedDataSafely($userId)
+    {
+        $tablesToClean = [
+            'friends' => ['user_id', 'friend_id'],
+            'notifications' => ['user_id', 'from_user_id'],
+            'film_matches' => ['user_id_1', 'friend_id'],
+            'movie_likes' => ['user_id'],
+            'ratings' => ['user_id'],
+            'watchlists' => ['user_id'],
+        ];
 
-        // Cerrar sesión antes de eliminar
-        Auth::logout();
+        foreach ($tablesToClean as $table => $columns) {
+            try {
+                // Verificar si la tabla existe
+                if (Schema::hasTable($table)) {
+                    $query = DB::table($table);
+                    
+                    // Construir la consulta WHERE para múltiples columnas
+                    $query->where(function($q) use ($columns, $userId, $table) {
+                        foreach ($columns as $column) {
+                            if (Schema::hasColumn($table, $column)) {
+                                $q->orWhere($column, $userId);
+                            }
+                        }
+                    });
 
-        // Eliminar relaciones y el usuario usando DB directo
-        DB::transaction(function() use ($userId) {
-            // Eliminar amistades
-            DB::table('friends')->where('user_id', $userId)->orWhere('friend_id', $userId)->delete();
-            
-            // Eliminar notificaciones
-            DB::table('notifications')->where('user_id', $userId)->orWhere('from_user_id', $userId)->delete();
-            
-            // Eliminar matches
-            DB::table('film_matches')->where('user_id_1', $userId)->orWhere('friend_id', $userId)->delete();
-            
-            // Eliminar likes de películas
-            DB::table('movie_likes')->where('user_id', $userId)->delete();
-            
-            // Eliminar ratings si existen
-            DB::table('ratings')->where('user_id', $userId)->delete();
-            
-            // Eliminar watchlists si existen
-            DB::table('watchlists')->where('user_id', $userId)->delete();
-            
-            // Eliminar el usuario
-            DB::table('users')->where('id', $userId)->delete();
-        });
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return redirect('/')->with('success', 'Cuenta eliminada correctamente.');
+                    $deletedCount = $query->delete();
+                    
+                    Log::info("Eliminados registros de tabla {$table}", [
+                        'user_id' => $userId,
+                        'deleted_count' => $deletedCount
+                    ]);
+                } else {
+                    Log::warning("Tabla {$table} no existe, saltando...", ['user_id' => $userId]);
+                }
+            } catch (\Exception $e) {
+                Log::warning("Error al limpiar tabla {$table}", [
+                    'user_id' => $userId,
+                    'error' => $e->getMessage()
+                ]);
+                continue;
+            }
+        }
     }
 }
