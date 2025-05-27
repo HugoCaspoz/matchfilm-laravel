@@ -1,6 +1,7 @@
 <header class="app-header">
     <div class="container">
         <nav class="navbar">
+            <!-- Logo -->
             <a href="{{ route('movies.index') }}" class="nav-logo">
                 <div class="logo-container">
                     <img src="{{ asset('img/logo.png') }}" alt="MatchFilm Logo">
@@ -8,13 +9,14 @@
                 <span class="logo-text">MatchFilm</span>
             </a>
 
-            <!-- Mobile menu button -->
+            <!-- Mobile menu button - DEBE ESTAR VISIBLE -->
             <button class="mobile-menu-btn" type="button" id="mobileMenuBtn" aria-label="Toggle navigation">
-                <span class="hamburger-line"></span>
-                <span class="hamburger-line"></span>
-                <span class="hamburger-line"></span>
+                <div class="hamburger-line"></div>
+                <div class="hamburger-line"></div>
+                <div class="hamburger-line"></div>
             </button>
 
+            <!-- Navigation Links -->
             <div class="nav-links" id="navLinks">
                 <a href="{{ route('movies.index') }}" class="nav-link {{ request()->routeIs('movies.index') ? 'active' : '' }}" title="Descubrir películas">
                     <i class="fas fa-film"></i>
@@ -77,6 +79,7 @@
                 @endauth
             </div>
 
+            <!-- Desktop user actions -->
             <div class="nav-actions desktop-only">
                 @auth
                 <div class="dropdown">
