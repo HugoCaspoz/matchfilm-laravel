@@ -20,9 +20,7 @@ window.acceptInvitation = (notificationId) => {
         // Mostrar mensaje de éxito
         showNotification(data.message, "success")
         // Recargar la página para actualizar la vista
-        setTimeout(() => {
-          location.reload()
-        }, 1000)
+        
       } else {
         showNotification(data.message || "Error al aceptar la invitación", "error")
         button.disabled = false
@@ -59,9 +57,7 @@ window.declineInvitation = (notificationId) => {
           // Mostrar mensaje de éxito
           showNotification(data.message, "success")
           // Recargar la página para actualizar la vista
-          setTimeout(() => {
-            location.reload()
-          }, 1000)
+          
         } else {
           showNotification(data.message || "Error al declinar la invitación", "error")
           button.disabled = false
