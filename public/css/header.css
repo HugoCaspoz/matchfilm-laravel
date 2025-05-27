@@ -74,7 +74,7 @@
 }
 
 .logo-text {
-  background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+  background:var(--primary-color);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
