@@ -28,9 +28,9 @@
         <div class="min-h-screen bg-gray-100" style="background-color: #f8f5e6 !important;">
             @include('layouts.navigation')
 
-            <!-- Page Heading -->
+            <!-- Page Heading - Solo mostrar si existe y agregar margen superior -->
             @if (isset($header))
-                <header class="bg-white shadow">
+                <header class="bg-white shadow" style="margin-top: 70px; position: relative; z-index: 999;">
                     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                         {{ $header }}
                     </div>
@@ -38,7 +38,7 @@
             @endif
 
             <!-- Page Content -->
-            <main>
+            <main style="{{ isset($header) ? '' : 'padding-top: 70px;' }}">
                 {{ $slot }}
             </main>
         </div>
