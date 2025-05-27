@@ -30,7 +30,7 @@
 
             <!-- Page Heading - Solo mostrar si existe y agregar margen superior -->
             @if (isset($header))
-                <header class="bg-white shadow" style="margin-top: 70px; position: relative; z-index: 999;">
+                <header class="bg-white shadow" style="position: relative; z-index: 999;">
                     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                         {{ $header }}
                     </div>
