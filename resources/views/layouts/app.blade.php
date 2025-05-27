@@ -38,7 +38,7 @@
             @endif
 
             <!-- Page Content -->
-            <main style="{{ isset($header) ? '' : 'padding-top: 70px;' }}">
+            <main style="{{ isset($header) }}">
                 {{ $slot }}
             </main>
         </div>
