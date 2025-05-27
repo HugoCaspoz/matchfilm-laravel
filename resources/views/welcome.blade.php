@@ -217,7 +217,7 @@
             <div class="row">
                 <div class="col-lg-4 mb-4 mb-lg-0">
                     <h5><i class="fas fa-film me-2"></i>MatchFilm</h5>
-                    <p>Encuentra la película perfecta para ver con tus amigos y amigo. Nunca más discutas sobre qué película elegir.</p>
+                    <p>Encuentra la película perfecta para ver con tus amigos y pareja. Nunca más discutas sobre qué película elegir.</p>
                 </div>
                 <div class="col-lg-2 col-md-4 mb-4 mb-md-0">
                     <h5>Enlaces</h5>
