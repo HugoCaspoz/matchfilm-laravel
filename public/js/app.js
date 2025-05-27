@@ -1,4 +1,4 @@
-// // Funcionalidad JavaScript para MatchFilm
+// Funcionalidad JavaScript para MatchFilm
 
 document.addEventListener('DOMContentLoaded', function() {
     // Inicializar tooltips de Bootstrap
