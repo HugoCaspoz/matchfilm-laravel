@@ -1,6 +1,6 @@
 // // Funcionalidad JavaScript para MatchFilm
 
-// document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function() {
 //     // Inicializar tooltips de Bootstrap
 //     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
 //     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
@@ -46,73 +46,73 @@
 //         });
 //     }
     
-//     // Cargar más películas al hacer scroll
-//     const movieContainer = document.getElementById('movie-container');
-//     const loadMoreBtn = document.getElementById('load-more');
+    // Cargar más películas al hacer scroll
+    const movieContainer = document.getElementById('movie-container');
+    const loadMoreBtn = document.getElementById('load-more');
     
-//     if (loadMoreBtn) {
-//         loadMoreBtn.addEventListener('click', function() {
-//             const page = parseInt(this.getAttribute('data-page')) + 1;
-//             const url = this.getAttribute('data-url').replace('PAGE_NUMBER', page);
+    if (loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', function() {
+            const page = parseInt(this.getAttribute('data-page')) + 1;
+            const url = this.getAttribute('data-url').replace('PAGE_NUMBER', page);
             
-//             fetch(url)
-//                 .then(response => response.json())
-//                 .then(data => {
-//                     if (data.results && data.results.length > 0) {
-//                         // Renderizar nuevas películas
-//                         data.results.forEach(movie => {
-//                             const movieCard = createMovieCard(movie);
-//                             movieContainer.appendChild(movieCard);
-//                         });
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.results && data.results.length > 0) {
+                        // Renderizar nuevas películas
+                        data.results.forEach(movie => {
+                            const movieCard = createMovieCard(movie);
+                            movieContainer.appendChild(movieCard);
+                        });
                         
-//                         // Actualizar página actual
-//                         this.setAttribute('data-page', page);
+                        // Actualizar página actual
+                        this.setAttribute('data-page', page);
                         
-//                         // Ocultar botón si es la última página
-//                         if (page >= data.total_pages) {
-//                             this.style.display = 'none';
-//                         }
-//                     } else {
-//                         this.style.display = 'none';
-//                     }
-//                 })
-//                 .catch(error => {
-//                     console.error('Error cargando más películas:', error);
-//                 });
-//         });
-//     }
+                        // Ocultar botón si es la última página
+                        if (page >= data.total_pages) {
+                            this.style.display = 'none';
+                        }
+                    } else {
+                        this.style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error cargando más películas:', error);
+                });
+        });
+    }
     
-//     // Función para crear tarjeta de película
-//     function createMovieCard(movie) {
-//         const col = document.createElement('div');
-//         col.className = 'col-md-3 mb-4';
+    // Función para crear tarjeta de película
+    function createMovieCard(movie) {
+        const col = document.createElement('div');
+        col.className = 'col-md-3 mb-4';
         
-//         const card = document.createElement('div');
-//         card.className = 'card h-100';
+        const card = document.createElement('div');
+        card.className = 'card h-100';
         
-//         let imageHtml = '';
-//         if (movie.poster_path) {
-//             imageHtml = `<img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" class="card-img-top" alt="${movie.title}">`;
-//         } else {
-//             imageHtml = `<div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 300px;">
-//                 <span class="text-white">Sin imagen</span>
-//             </div>`;
-//         }
+        let imageHtml = '';
+        if (movie.poster_path) {
+            imageHtml = `<img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" class="card-img-top" alt="${movie.title}">`;
+        } else {
+            imageHtml = `<div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 300px;">
+                <span class="text-white">Sin imagen</span>
+            </div>`;
+        }
         
-//         const overview = movie.overview ? movie.overview.substring(0, 100) + '...' : '';
+        const overview = movie.overview ? movie.overview.substring(0, 100) + '...' : '';
         
-//         card.innerHTML = `
-//             ${imageHtml}
-//             <div class="card-body">
-//                 <h5 class="card-title">${movie.title}</h5>
-//                 <p class="card-text small">${overview}</p>
-//             </div>
-//             <div class="card-footer bg-white">
-//                 <a href="/movies/${movie.id}" class="btn btn-primary w-100">Ver detalles</a>
-//             </div>
-//         `;
+        card.innerHTML = `
+            ${imageHtml}
+            <div class="card-body">
+                <h5 class="card-title">${movie.title}</h5>
+                <p class="card-text small">${overview}</p>
+            </div>
+            <div class="card-footer bg-white">
+                <a href="/movies/${movie.id}" class="btn btn-primary w-100">Ver detalles</a>
+            </div>
+        `;
         
-//         col.appendChild(card);
-//         return col;
-//     }
-// });
+        col.appendChild(card);
+        return col;
+    }
+});
