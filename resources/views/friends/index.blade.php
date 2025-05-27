@@ -124,7 +124,7 @@
                 </div>
             </div>
 
-            <div class="col-md-6 mb-4">
+            <!-- <div class="col-md-6 mb-4">
                 <div class="card h-100">
                     <div class="card-body">
                         <h3 class="card-title mb-4">Notificaciones</h3>
@@ -181,7 +181,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> -->
         </div>
     </div>
 
