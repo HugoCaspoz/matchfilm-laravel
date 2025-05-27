@@ -92,6 +92,11 @@ body {
   opacity: 0.85;
 }
 
+.notification-item.processed {
+  border-left: 4px solid var(--success-color);
+  background: linear-gradient(135deg, #fff 0%, #f0fdf4 100%);
+}
+
 /* Header de la notificación */
 .notification-header {
   padding: 20px;
@@ -151,6 +156,34 @@ body {
   font-size: 0.875rem;
   font-weight: 500;
   display: block;
+  margin-bottom: 8px;
+}
+
+/* Estado procesado */
+.processed-status {
+  margin-top: 8px;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.status-badge.accepted {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.status-badge.declined {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
 }
 
 /* Contenido de la película */
@@ -196,6 +229,10 @@ body {
   flex: 1;
   min-width: 0;
   overflow: hidden;
+}
+
+.movie-info span {
+  background-color: transparent !important;
 }
 
 .movie-title {
@@ -293,6 +330,12 @@ body {
   text-decoration: none;
 }
 
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .btn-primary {
   background: var(--primary-color);
   color: white;
@@ -355,6 +398,52 @@ body {
   background: var(--gray-800);
 }
 
+/* Alertas */
+.alert {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 1px solid;
+}
+
+.alert-success {
+  background: #dcfce7;
+  color: #166534;
+  border-color: #bbf7d0;
+}
+
+/* Notificaciones toast */
+.toast-notification {
+  position: fixed;
+  top: 100px;
+  right: 20px;
+  background: white;
+  padding: 16px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 1000;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  border-left: 4px solid;
+}
+
+.toast-notification.show {
+  transform: translateX(0);
+}
+
+.toast-notification.success {
+  border-left-color: var(--success-color);
+  color: #166534;
+}
+
+.toast-notification.error {
+  border-left-color: var(--primary-color);
+  color: #991b1b;
+}
+
 /* Estado vacío */
 .empty-state {
   text-align: center;
@@ -415,6 +504,16 @@ body {
   .btn {
     width: 100%;
     justify-content: center;
+  }
+
+  .toast-notification {
+    right: 16px;
+    left: 16px;
+    transform: translateY(-100%);
+  }
+
+  .toast-notification.show {
+    transform: translateY(0);
   }
 }
 

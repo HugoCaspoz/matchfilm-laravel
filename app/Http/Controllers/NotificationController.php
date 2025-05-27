@@ -37,7 +37,7 @@ class NotificationController extends Controller
         $notification->read = true;
         $notification->save();
         
-        return redirect()->back();
+        return redirect()->back()->with('success', 'Notificación marcada como leída');
     }
 
     public function markAllAsRead()
@@ -46,7 +46,7 @@ class NotificationController extends Controller
                    ->where('read', false)
                    ->update(['read' => true]);
         
-        return redirect()->back();
+        return redirect()->back()->with('success', 'Todas las notificaciones marcadas como leídas');
     }
 
     public function getUnreadCount()
@@ -56,6 +56,76 @@ class NotificationController extends Controller
                             ->count();
         
         return response()->json(['count' => $count]);
+    }
+
+    public function acceptInvitation($id)
+    {
+        try {
+            $notification = Notification::where('id', $id)
+                                       ->where('user_id', Auth::id())
+                                       ->where('type', 'movie_invitation')
+                                       ->firstOrFail();
+
+            // Marcar la notificación como leída y procesada
+            $notification->read = true;
+            
+            // Agregar un campo 'processed' a los datos para indicar que ya fue procesada
+            $data = is_string($notification->data) ? json_decode($notification->data, true) : $notification->data;
+            $data['processed'] = true;
+            $data['action'] = 'accepted';
+            $data['processed_at'] = now()->toISOString();
+            $notification->data = json_encode($data);
+            
+            $notification->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Invitación aceptada correctamente'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error al aceptar invitación: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al aceptar la invitación'
+            ], 500);
+        }
+    }
+
+    public function declineInvitation($id)
+    {
+        try {
+            $notification = Notification::where('id', $id)
+                                       ->where('user_id', Auth::id())
+                                       ->where('type', 'movie_invitation')
+                                       ->firstOrFail();
+
+            // Marcar la notificación como leída y procesada
+            $notification->read = true;
+            
+            // Agregar un campo 'processed' a los datos para indicar que ya fue procesada
+            $data = is_string($notification->data) ? json_decode($notification->data, true) : $notification->data;
+            $data['processed'] = true;
+            $data['action'] = 'declined';
+            $data['processed_at'] = now()->toISOString();
+            $notification->data = json_encode($data);
+            
+            $notification->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Invitación declinada correctamente'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error al declinar invitación: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al declinar la invitación'
+            ], 500);
+        }
     }
 
     public function sendMovieInvitation(Request $request)
@@ -104,6 +174,7 @@ class NotificationController extends Controller
                 'watch_date' => $validated['watch_date'],
                 'message' => $validated['message'] ?? '',
                 'movie_poster' => $moviePoster,
+                'processed' => false, // Inicialmente no procesada
             ]);
             $notification->save();
 

@@ -18,6 +18,12 @@
 
     <div class="py-12">
         <div class="notifications-container">
+            @if(session('success'))
+                <div class="alert alert-success">
+                    {{ session('success') }}
+                </div>
+            @endif
+
             @if($notifications->isEmpty())
                 <div class="empty-state">
                     <i class="fas fa-bell"></i>
@@ -33,9 +39,13 @@
                             if ($notification->data) {
                                 $data = is_string($notification->data) ? json_decode($notification->data, true) : $notification->data;
                             }
+                            
+                            // Verificar si la notificación ya fue procesada
+                            $isProcessed = $data && isset($data['processed']) && $data['processed'] === true;
+                            $action = $data['action'] ?? null;
                         @endphp
                         
-                        <div class="notification-item {{ $notification->read ? 'read' : 'unread' }}">
+                        <div class="notification-item {{ $notification->read ? 'read' : 'unread' }} {{ $isProcessed ? 'processed' : '' }}">
                             <!-- Header de la notificación -->
                             <div class="notification-header">
                                 <div class="notification-icon 
@@ -59,6 +69,20 @@
                                 <div class="notification-header-content">
                                     <h4 class="notification-title">{{ $notification->message }}</h4>
                                     <span class="notification-time">{{ $notification->created_at->diffForHumans() }}</span>
+                                    
+                                    @if($isProcessed)
+                                        <div class="processed-status">
+                                            @if($action === 'accepted')
+                                                <span class="status-badge accepted">
+                                                    <i class="fas fa-check"></i> Invitación aceptada
+                                                </span>
+                                            @elseif($action === 'declined')
+                                                <span class="status-badge declined">
+                                                    <i class="fas fa-times"></i> Invitación declinada
+                                                </span>
+                                            @endif
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                             
@@ -100,14 +124,14 @@
                                 
                                 <!-- Acciones -->
                                 <div class="notification-actions">
-                                    @if($notification->type == 'movie_invitation')
-                                        <a href="{{ route('matches.index') }}" class="btn btn-success">
+                                    @if($notification->type == 'movie_invitation' && !$isProcessed)
+                                        <button onclick="acceptInvitation({{ $notification->id }})" class="btn btn-success">
                                             <i class="fas fa-check"></i> Aceptar invitación
-                                        </a>
+                                        </button>
                                         <button onclick="declineInvitation({{ $notification->id }})" class="btn btn-secondary">
                                             <i class="fas fa-times"></i> Declinar
                                         </button>
-                                    @else
+                                    @elseif($notification->type == 'match')
                                         <a href="{{ route('matches.index') }}" class="btn btn-primary">
                                             <i class="fas fa-eye"></i> Ver mis matches
                                         </a>

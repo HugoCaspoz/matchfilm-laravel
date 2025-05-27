@@ -69,8 +69,11 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/notifications/read/{id}', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read.all');
     Route::get('/notifications/count', [NotificationController::class, 'getUnreadCount'])->name('notifications.count');
-    // Añadir la ruta para la invitación de película
+    
+    // Invitaciones de películas
     Route::post('/notifications/movie-invitation', [NotificationController::class, 'sendMovieInvitation'])->name('notifications.movie_invitation');
+    Route::post('/notifications/{id}/accept', [NotificationController::class, 'acceptInvitation'])->name('notifications.accept');
+    Route::post('/notifications/{id}/decline', [NotificationController::class, 'declineInvitation'])->name('notifications.decline');
 });
 
 // Rutas para servir archivos CSS y JS
