@@ -34,11 +34,8 @@
                 <div class="notification-list">
                     @foreach($notifications as $notification)
                         @php
-                            // Decodificar datos JSON de forma segura
-                            $data = null;
-                            if ($notification->data) {
-                                $data = is_string($notification->data) ? json_decode($notification->data, true) : $notification->data;
-                            }
+                            // Con el cast 'array', $notification->data ya es un array
+                            $data = $notification->data;
                             
                             // Verificar si la notificación ya fue procesada
                             $isProcessed = $data && isset($data['processed']) && $data['processed'] === true;
@@ -48,9 +45,8 @@
                             if ($notification->type == 'friend_request') {
                                 \Log::info('🔍 DEBUG VISTA - Notificación friend_request:', [
                                     'notification_id' => $notification->id,
-                                    'data_raw' => $notification->data,
-                                    'data_processed' => $data,
-                                    'data_type' => gettype($notification->data),
+                                    'data' => $data,
+                                    'data_type' => gettype($data),
                                     'has_processed_key' => isset($data['processed']),
                                     'processed_value' => $data['processed'] ?? 'NO_EXISTE',
                                     'isProcessed_result' => $isProcessed,
@@ -59,7 +55,7 @@
                             }
                         @endphp
                         
-                        <div class="notification-item {{ $notification->read ? 'read' : 'unread' }} {{ $isProcessed ? 'processed' : '' }}">
+                        <div class="notification-item {{ $notification->read ? 'read' : 'unread' }} {{ $isProcessed ? 'processed' : '' }}" data-notification-id="{{ $notification->id }}">
                             <!-- Header de la notificación -->
                             <div class="notification-header">
                                 <div class="notification-icon 
@@ -176,19 +172,15 @@
                                 <!-- Notificaciones estándar (incluyendo solicitudes de amistad) -->
                                 <div class="notification-actions">
                                     @if($notification->type == 'friend_request' && $data && isset($data['friendship_id']) && !$isProcessed)
-                                        <!-- Botones para solicitudes de amistad NO procesadas -->
-                                        <form action="{{ route('friends.accept', $data['friendship_id']) }}" method="POST" class="inline">
-                                            @csrf
-                                            <button type="submit" class="btn btn-success">
+                                        <!-- Botones para solicitudes de amistad NO procesadas - USANDO JAVASCRIPT -->
+                                        <div class="friend-request-buttons">
+                                            <button onclick="acceptFriendRequest({{ $data['friendship_id'] }})" class="btn btn-success">
                                                 <i class="fas fa-check"></i> Aceptar solicitud
                                             </button>
-                                        </form>
-                                        <form action="{{ route('friends.reject', $data['friendship_id']) }}" method="POST" class="inline">
-                                            @csrf
-                                            <button type="submit" class="btn btn-secondary">
+                                            <button onclick="rejectFriendRequest({{ $data['friendship_id'] }})" class="btn btn-secondary">
                                                 <i class="fas fa-times"></i> Rechazar
                                             </button>
-                                        </form>
+                                        </div>
                                     @elseif($notification->type == 'friend_accepted')
                                         <!-- Para notificaciones de amistad aceptada, mostrar botón para ir a amigos -->
                                         <a href="{{ route('friends.index') }}" class="btn btn-primary">

@@ -172,14 +172,14 @@ class FriendController extends Controller
                 'status' => 'pending'
             ]);
 
-            // Crear notificación - usar array directamente (no json_encode)
+            // Crear notificación - usar array directamente (Laravel lo convertirá automáticamente)
             Notification::create([
                 'user_id' => $friend->id,
                 'from_user_id' => $userId,
                 'type' => 'friend_request',
                 'message' => Auth::user()->name . ' te ha enviado una solicitud de pareja.',
                 'read' => false,
-                'data' => [  // Array directo, Laravel lo convertirá automáticamente
+                'data' => [  // Array directo, el cast se encarga de la conversión
                     'friendship_id' => $friendship->id,
                     'processed' => false
                 ],
@@ -223,11 +223,23 @@ class FriendController extends Controller
         
             // Verificar que el usuario actual sea el destinatario de la solicitud
             if ($friendship->friend_id != Auth::id()) {
+                if (request()->expectsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'No tienes permiso para aceptar esta solicitud.'
+                    ], 403);
+                }
                 return redirect()->back()->with('error', 'No tienes permiso para aceptar esta solicitud.');
             }
         
             // Verificar que la solicitud esté pendiente
             if ($friendship->status != 'pending') {
+                if (request()->expectsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Esta solicitud ya ha sido procesada.'
+                    ], 400);
+                }
                 return redirect()->back()->with('error', 'Esta solicitud ya ha sido procesada.');
             }
         
@@ -235,57 +247,37 @@ class FriendController extends Controller
             $friendship->status = 'accepted';
             $friendship->save();
 
-            // Log para debug - estado inicial
             Log::info('=== INICIO acceptRequest ===', [
                 'user_id' => Auth::id(),
                 'friendship_id' => $id
             ]);
 
-            // Buscar TODAS las notificaciones del usuario para debug
-            $allNotifications = Notification::where('user_id', Auth::id())
-                                            ->where('type', 'friend_request')
-                                            ->get();
-
-            Log::info('Todas las notificaciones de friend_request del usuario:', [
-                'count' => $allNotifications->count(),
-                'notifications' => $allNotifications->map(function($n) {
-                    return [
-                        'id' => $n->id,
-                        'data' => $n->data,
-                        'data_type' => gettype($n->data),
-                        'friendship_id_in_data' => isset($n->data['friendship_id']) ? $n->data['friendship_id'] : 'NO_EXISTE'
-                    ];
-                })->toArray()
-            ]);
-
-            // Buscar la notificación específica
+            // Buscar la notificación - con el cast 'array', data ya es un array
             $notification = Notification::where('user_id', Auth::id())
                                        ->where('type', 'friend_request')
-                                       ->whereJsonContains('data->friendship_id', (int)$id)
+                                       ->get()
+                                       ->filter(function($n) use ($id) {
+                                           // Como data ya es array gracias al cast, no necesitamos json_decode
+                                           return isset($n->data['friendship_id']) && 
+                                                  $n->data['friendship_id'] == $id;
+                                       })
                                        ->first();
-
-            Log::info('Búsqueda específica de notificación:', [
-                'found' => $notification ? 'SÍ' : 'NO',
-                'search_friendship_id' => (int)$id,
-                'notification_id' => $notification ? $notification->id : null,
-                'notification_data' => $notification ? $notification->data : null
-            ]);
 
             if ($notification) {
                 Log::info('ANTES de actualizar notificación:', [
                     'notification_id' => $notification->id,
                     'read' => $notification->read,
                     'data' => $notification->data,
-                    'processed' => isset($notification->data['processed']) ? $notification->data['processed'] : 'NO_EXISTE'
+                    'processed' => $notification->data['processed'] ?? 'NO_EXISTE'
                 ]);
 
+                // Actualizar la notificación - trabajar directamente con el array
                 $notification->read = true;
-                // Trabajar directamente con el array
-                $data = $notification->data;
+                $data = $notification->data; // Ya es array gracias al cast
                 $data['processed'] = true;
                 $data['action'] = 'accepted';
                 $data['processed_at'] = now()->toISOString();
-                $notification->data = $data;
+                $notification->data = $data; // Laravel se encarga de la conversión
                 $notification->save();
 
                 // Verificar que se guardó correctamente
@@ -294,46 +286,18 @@ class FriendController extends Controller
                     'notification_id' => $notification->id,
                     'read' => $notification->read,
                     'data' => $notification->data,
-                    'processed' => isset($notification->data['processed']) ? $notification->data['processed'] : 'NO_EXISTE'
+                    'processed' => $notification->data['processed'] ?? 'NO_EXISTE'
                 ]);
             } else {
                 Log::error('❌ NO SE ENCONTRÓ LA NOTIFICACIÓN', [
                     'user_id' => Auth::id(),
-                    'friendship_id' => $id,
-                    'search_type' => 'whereJsonContains'
+                    'friendship_id' => $id
                 ]);
-                
-                // Intentar búsqueda alternativa
-                $alternativeSearch = Notification::where('user_id', Auth::id())
-                                               ->where('type', 'friend_request')
-                                               ->get()
-                                               ->filter(function($n) use ($id) {
-                                                   return isset($n->data['friendship_id']) && $n->data['friendship_id'] == $id;
-                                               })
-                                               ->first();
-                
-                Log::info('Búsqueda alternativa:', [
-                    'found' => $alternativeSearch ? 'SÍ' : 'NO',
-                    'notification_id' => $alternativeSearch ? $alternativeSearch->id : null
-                ]);
-                
-                if ($alternativeSearch) {
-                    $notification = $alternativeSearch;
-                    $notification->read = true;
-                    $data = $notification->data;
-                    $data['processed'] = true;
-                    $data['action'] = 'accepted';
-                    $data['processed_at'] = now()->toISOString();
-                    $notification->data = $data;
-                    $notification->save();
-                    
-                    Log::info('✅ Notificación actualizada con búsqueda alternativa');
-                }
             }
 
             Log::info('=== FIN acceptRequest ===');
         
-            // Crear notificación para el remitente - usar array directamente
+            // Crear notificación para el remitente
             Notification::create([
                 'user_id' => $friendship->user_id,
                 'from_user_id' => Auth::id(),
@@ -345,10 +309,26 @@ class FriendController extends Controller
                     'processed' => true
                 ],
             ]);
+
+            // Respuesta diferente según el tipo de petición
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Solicitud de amistad aceptada correctamente.'
+                ]);
+            }
         
             return redirect()->back()->with('success', 'Solicitud de amistad aceptada correctamente.');
         } catch (\Exception $e) {
             Log::error('Error al aceptar solicitud de amistad: ' . $e->getMessage());
+            
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al aceptar la solicitud de amistad.'
+                ], 500);
+            }
+            
             return redirect()->back()->with('error', 'Error al aceptar la solicitud de amistad.');
         }
     }
@@ -360,36 +340,40 @@ class FriendController extends Controller
         
             // Verificar que el usuario actual sea el destinatario de la solicitud
             if ($friendship->friend_id != Auth::id()) {
+                if (request()->expectsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'No tienes permiso para rechazar esta solicitud.'
+                    ], 403);
+                }
                 return redirect()->back()->with('error', 'No tienes permiso para rechazar esta solicitud.');
             }
         
             // Verificar que la solicitud esté pendiente
             if ($friendship->status != 'pending') {
+                if (request()->expectsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Esta solicitud ya ha sido procesada.'
+                    ], 400);
+                }
                 return redirect()->back()->with('error', 'Esta solicitud ya ha sido procesada.');
             }
 
-            // Log para debug
             Log::info('=== INICIO rejectRequest ===', [
                 'user_id' => Auth::id(),
                 'friendship_id' => $id
             ]);
 
-            // Marcar la notificación como leída y procesada ANTES de eliminar la amistad
+            // Buscar la notificación - con el cast 'array', data ya es un array
             $notification = Notification::where('user_id', Auth::id())
                                        ->where('type', 'friend_request')
-                                       ->whereJsonContains('data->friendship_id', (int)$id)
+                                       ->get()
+                                       ->filter(function($n) use ($id) {
+                                           return isset($n->data['friendship_id']) && 
+                                                  $n->data['friendship_id'] == $id;
+                                       })
                                        ->first();
-
-            if (!$notification) {
-                // Búsqueda alternativa
-                $notification = Notification::where('user_id', Auth::id())
-                                           ->where('type', 'friend_request')
-                                           ->get()
-                                           ->filter(function($n) use ($id) {
-                                               return isset($n->data['friendship_id']) && $n->data['friendship_id'] == $id;
-                                           })
-                                           ->first();
-            }
 
             if ($notification) {
                 Log::info('Notificación encontrada para rechazar, actualizando...', [
@@ -398,8 +382,7 @@ class FriendController extends Controller
                 ]);
 
                 $notification->read = true;
-                // Trabajar directamente con el array
-                $data = $notification->data;
+                $data = $notification->data; // Ya es array gracias al cast
                 $data['processed'] = true;
                 $data['action'] = 'rejected';
                 $data['processed_at'] = now()->toISOString();
@@ -421,10 +404,26 @@ class FriendController extends Controller
         
             // Eliminar la solicitud en lugar de marcarla como rechazada
             $friendship->delete();
+
+            // Respuesta diferente según el tipo de petición
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Solicitud de amistad rechazada.'
+                ]);
+            }
         
             return redirect()->back()->with('success', 'Solicitud de amistad rechazada.');
         } catch (\Exception $e) {
             Log::error('Error al rechazar solicitud de amistad: ' . $e->getMessage());
+            
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al rechazar la solicitud de amistad.'
+                ], 500);
+            }
+            
             return redirect()->back()->with('error', 'Error al rechazar la solicitud de amistad.');
         }
     }

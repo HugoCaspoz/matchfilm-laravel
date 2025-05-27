@@ -69,12 +69,12 @@ class NotificationController extends Controller
             // Marcar la notificación como leída y procesada
             $notification->read = true;
             
-            // Agregar un campo 'processed' a los datos para indicar que ya fue procesada
-            $data = is_string($notification->data) ? json_decode($notification->data, true) : $notification->data;
+            // Con el cast 'array', data ya es un array
+            $data = $notification->data;
             $data['processed'] = true;
             $data['action'] = 'accepted';
             $data['processed_at'] = now()->toISOString();
-            $notification->data = json_encode($data);
+            $notification->data = $data; // Laravel se encarga de la conversión
             
             $notification->save();
 
@@ -104,12 +104,12 @@ class NotificationController extends Controller
             // Marcar la notificación como leída y procesada
             $notification->read = true;
             
-            // Agregar un campo 'processed' a los datos para indicar que ya fue procesada
-            $data = is_string($notification->data) ? json_decode($notification->data, true) : $notification->data;
+            // Con el cast 'array', data ya es un array
+            $data = $notification->data;
             $data['processed'] = true;
             $data['action'] = 'declined';
             $data['processed_at'] = now()->toISOString();
-            $notification->data = json_encode($data);
+            $notification->data = $data; // Laravel se encarga de la conversión
             
             $notification->save();
 
@@ -161,21 +161,21 @@ class NotificationController extends Controller
                 // Continuar sin el poster si hay error
             }
             
-            // Crear la notificación para el amigo
+            // Crear la notificación para el amigo - usar array directo
             $notification = new Notification();
             $notification->user_id = $validated['friend_id'];
             $notification->from_user_id = $user->id;
             $notification->type = 'movie_invitation';
             $notification->message = $user->name . ' te ha invitado a ver "' . $validated['movie_title'] . '"';
             $notification->read = false;
-            $notification->data = json_encode([
+            $notification->data = [  // Array directo, el cast se encarga de la conversión
                 'movie_id' => $validated['movie_id'],
                 'movie_title' => $validated['movie_title'],
                 'watch_date' => $validated['watch_date'],
                 'message' => $validated['message'] ?? '',
                 'movie_poster' => $moviePoster,
-                'processed' => false, // Inicialmente no procesada
-            ]);
+                'processed' => false,
+            ];
             $notification->save();
 
             return response()->json([
