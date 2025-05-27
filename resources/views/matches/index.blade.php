@@ -10,11 +10,6 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            {{-- Agregar el título aquí directamente --}}
-            <div class="mb-6">
-                <h1 class="text-3xl font-bold text-gray-900">Mis Matches</h1>
-            </div>
-
             <div id="alert-container">
                 @if (session('success'))
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
