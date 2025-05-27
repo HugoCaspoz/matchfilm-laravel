@@ -4,7 +4,7 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Buscar Películas') }}
             </h2>
-            <a href="{{ route('favorites.index') }}" class="btn" style="background-color: #ab9079; color: white;">
+            <a href="{{ route('favorites.index') }}" class="btn" style="background-color: #e50914; color: white;">
                 <i class="fas fa-heart me-2"></i> Mis Favoritas
             </a>
         </div>
@@ -36,7 +36,7 @@
                                 <input type="text" name="query" value="{{ $query }}" class="form-control w-full" placeholder="Buscar películas por título..." required>
                             </div>
                             <div>
-                                <button type="submit" class="btn w-full md:w-auto" style="background-color: #ab9079; color: white;">
+                                <button type="submit" class="btn w-full md:w-auto" style="background-color: #e50914; color: white;">
                                     <i class="fas fa-search me-2"></i> Buscar
                                 </button>
                             </div>

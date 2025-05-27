@@ -1,5 +1,5 @@
 :root {
-  --primary-color: #ab9079;
+  --primary-color: #e50914;
   --secondary-color: #586294;
   --text-light: #ffffff;
   --text-muted: rgba(255, 255, 255, 0.7);
@@ -258,7 +258,7 @@ body {
 }
 
 .nav-tabs .nav-link.active {
-  color: #ab9079;
+  color: #e50914;
   background-color: #fff;
   border-color: #dee2e6 #dee2e6 #fff;
   font-weight: bold;
