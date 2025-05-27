@@ -433,30 +433,56 @@ class FriendController extends Controller
     {
         try {
             $user = Auth::user();
-            
+        
             // Eliminar relación en ambas direcciones
             $deleted = Friend::where(function($query) use ($user, $id) {
-                    $query->where(function($q) use ($user, $id) {
-                        $q->where('user_id', $user->id)
-                          ->where('friend_id', $id);
-                    })
-                    ->orWhere(function($q) use ($user, $id) {
-                        $q->where('user_id', $id)
-                          ->where('friend_id', $user->id);
-                    });
+                $query->where(function($q) use ($user, $id) {
+                    $q->where('user_id', $user->id)
+                      ->where('friend_id', $id);
                 })
-                ->delete();
+                ->orWhere(function($q) use ($user, $id) {
+                    $q->where('user_id', $id)
+                      ->where('friend_id', $user->id);
+                });
+            })
+            ->delete();
 
-            if ($deleted) {
-                return redirect()->back()->with('success', 'Pareja eliminada correctamente.');
-            } else {
-                return redirect()->back()->with('error', 'No se encontró la relación de amistad.');
+        if ($deleted) {
+            // Si es una petición AJAX, devolver JSON
+            if (request()->expectsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Pareja eliminada correctamente.'
+                ]);
             }
-        } catch (\Exception $e) {
-            Log::error('Error al eliminar amigo: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Error al eliminar la pareja.');
+            
+            // Si es una petición normal, devolver redirect
+            return redirect()->back()->with('success', 'Pareja eliminada correctamente.');
+        } else {
+            // Si es una petición AJAX, devolver JSON de error
+            if (request()->expectsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontró la relación de amistad.'
+                ], 404);
+            }
+            
+            return redirect()->back()->with('error', 'No se encontró la relación de amistad.');
         }
+    } catch (\Exception $e) {
+        Log::error('Error al eliminar amigo: ' . $e->getMessage());
+        
+        // Si es una petición AJAX, devolver JSON de error
+        if (request()->expectsJson() || request()->ajax()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar la pareja.'
+            ], 500);
+        }
+        
+        return redirect()->back()->with('error', 'Error al eliminar la pareja.');
     }
+}
 
     public function getMatches($friendId)
     {
