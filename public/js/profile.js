@@ -174,7 +174,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   if (remainingNotifications.length === 0) {
                     const notificationList = document.querySelector(".notification-list")
                     if (notificationList) {
-                      notificationList.innerHTML = '<p class="text-center text-white-50">No tienes notificaciones</p>'
+                      notificationList.innerHTML = '<p class="text-center text-white-50" style="color: black !important;" >No tienes notificaciones</p>'
                     }
                   }
                 }, 300)

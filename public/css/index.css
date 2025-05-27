@@ -141,7 +141,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: var(--gradient-dark);
+  background: rgba(88, 98, 148, 0.95);
   color: white;
   padding: 20px;
   max-height: 70%;
