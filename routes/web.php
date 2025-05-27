@@ -59,7 +59,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/friends', [FriendController::class, 'index'])->name('friends.index');
     Route::get('/friends/search', [FriendController::class, 'search'])->name('friends.search');
     Route::post('/friends/request', [FriendController::class, 'sendRequest'])->name('friends.request');
-    Route::delete('/friends/remove/{id}', [FriendController::class, 'removeFriend'])->name('friends.remove');
+    Route::delete('/friends/{id}', [FriendController::class, 'removeFriend'])->name('friends.remove');
     Route::get('/friends/matches/{id}', [FriendController::class, 'getMatches'])->name('friends.matches');
     Route::post('/friends/accept/{id}', [FriendController::class, 'acceptRequest'])->name('friends.accept');
     Route::post('/friends/reject/{id}', [FriendController::class, 'rejectRequest'])->name('friends.reject');
