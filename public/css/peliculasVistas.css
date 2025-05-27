@@ -34,7 +34,7 @@ body{
 .botones {
     display: flex;
     align-items: center;
-    background-color: #586294;
+    background-color: rgba(171, 144, 121, 0.2);
     color: white;
     text-decoration: none;
     font-size: 18px;
@@ -51,7 +51,7 @@ body{
 }
 :root{
     --primary-color:#ffe9d6;
-    --secondary-color: #586294;
+    --secondary-color: rgba(171, 144, 121, 0.2);
 }
 
 body{

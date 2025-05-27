@@ -1,6 +1,6 @@
 :root {
   --primary-color: #e50914;
-  --secondary-color: #586294;
+  --secondary-color: rgba(171, 144, 121, 0.2);
   --text-light: #ffffff;
   --text-muted: rgba(255, 255, 255, 0.7);
   --border-radius: 10px;
@@ -249,7 +249,7 @@ body {
   border: 1px solid transparent;
   border-top-left-radius: 0.25rem;
   border-top-right-radius: 0.25rem;
-  color: #586294;
+  color: rgba(171, 144, 121, 0.2);
 }
 
 .nav-tabs .nav-link:hover,

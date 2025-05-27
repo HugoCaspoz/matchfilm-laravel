@@ -5,7 +5,7 @@
   --light-color: #f8f9fa;
   --gray-color: #6c757d;
   --gradient-primary: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);
-  --gradient-dark: linear-gradient(135deg, #586294 0%, rgb(43, 47, 90) 100%);
+  --gradient-dark: linear-gradient(135deg, rgba(171, 144, 121, 0.2) 0%, rgb(43, 47, 90) 100%);
   --shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
   --transition: all 0.3s ease;
   --border-radius: 12px;
