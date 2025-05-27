@@ -1,76 +1,112 @@
 <header class="app-header">
-    <nav class="navbar">
-        <!-- Logo -->
-        <a href="{{ route('movies.index') }}" class="nav-logo">
-            <div class="logo-container">
-                <img src="{{ asset('images/logo.png') }}" alt="MatchFilm Logo" onerror="this.onerror=null; this.src='{{ asset('images/default-logo.svg') }}';">
-            </div>
-            <span class="logo-text">MatchFilm</span>
-        </a>
-
-        <!-- Navigation Links -->
-        <div class="nav-links">
-            <a href="{{ route('movies.index') }}" class="nav-link {{ request()->routeIs('movies.index') ? 'active' : '' }}">
-                <i class="fas fa-film"></i>
-                <span class="nav-text">Películas</span>
-            </a>
-            
-            @auth
-            <a href="{{ route('favorites.index') }}" class="nav-link {{ request()->routeIs('favorites.*') ? 'active' : '' }}">
-                <i class="fas fa-heart"></i>
-                <span class="nav-text">Favoritas</span>
-            </a>
-            
-            <a href="{{ route('matches.index') }}" class="nav-link {{ request()->routeIs('matches.index') ? 'active' : '' }}">
-                <i class="fas fa-star"></i>
-                <span class="nav-text">Matches</span>
-            </a>
-            
-            <a href="{{ route('friends.index') }}" class="nav-link {{ request()->routeIs('friends.index') ? 'active' : '' }}">
-                <i class="fas fa-users"></i>
-                <span class="nav-text">Amigos</span>
-            </a>
-            
-            <a href="{{ route('notifications.index') }}" class="nav-link {{ request()->routeIs('notifications.index') ? 'active' : '' }}">
-                <i class="fas fa-bell"></i>
-                <span class="nav-text">Notificaciones</span>
-            </a>
-            @endauth
-        </div>
-
-        <!-- User Actions -->
-        <div class="nav-actions">
-            @auth
-                <div class="dropdown">
-                    <button class="btn-user" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fas fa-user-circle"></i>
-                        <span id="username-display">{{ Auth::user()->name }}</span>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                        <li>
-                            <a class="dropdown-item" href="{{ route('profile.edit') }}">
-                                <i class="fas fa-user-cog me-2"></i> Perfil
-                            </a>
-                        </li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <button type="submit" class="dropdown-item" id="logout-btn">
-                                    <i class="fas fa-sign-out-alt me-2"></i> Cerrar sesión
-                                </button>
-                            </form>
-                        </li>
-                    </ul>
+    <div class="container">
+        <nav class="navbar">
+            <!-- Logo -->
+            <a href="{{ route('movies.index') }}" class="nav-logo">
+                <div class="logo-container">
+                    <img src="{{ asset('images/logo.png') }}" alt="MatchFilm Logo" onerror="this.onerror=null; this.src='{{ asset('images/default-logo.svg') }}';">
                 </div>
-            @else
-                <a href="{{ route('login') }}" class="btn-login">
-                    Iniciar sesión
+                <span class="logo-text">MatchFilm</span>
+            </a>
+
+            <!-- Mobile menu button - DEBE ESTAR VISIBLE -->
+            <button class="mobile-menu-btn" type="button" id="mobileMenuBtn" aria-label="Toggle navigation">
+                <div class="hamburger-line"></div>
+                <div class="hamburger-line"></div>
+                <div class="hamburger-line"></div>
+            </button>
+
+            <!-- Navigation Links -->
+            <div class="nav-links" id="navLinks">
+                <a href="{{ route('movies.index') }}" class="nav-link {{ request()->routeIs('movies.index') ? 'active' : '' }}">
+                    <i class="fas fa-film"></i>
+                    <span class="nav-text">Películas</span>
                 </a>
-                <a href="{{ route('register') }}" class="btn-register">
-                    Registrarse
+                
+                @auth
+                <a href="{{ route('favorites.index') }}" class="nav-link {{ request()->routeIs('favorites.*') ? 'active' : '' }}">
+                    <i class="fas fa-heart"></i>
+                    <span class="nav-text">Favoritas</span>
                 </a>
-            @endauth
-        </div>
-    </nav>
+                
+                <a href="{{ route('matches.index') }}" class="nav-link {{ request()->routeIs('matches.index') ? 'active' : '' }}">
+                    <i class="fas fa-star"></i>
+                    <span class="nav-text">Matches</span>
+                </a>
+                
+                <a href="{{ route('friends.index') }}" class="nav-link {{ request()->routeIs('friends.index') ? 'active' : '' }}">
+                    <i class="fas fa-users"></i>
+                    <span class="nav-text">Amigos</span>
+                </a>
+                
+                <a href="{{ route('notifications.index') }}" class="nav-link {{ request()->routeIs('notifications.index') ? 'active' : '' }}">
+                    <i class="fas fa-bell"></i>
+                    <span class="nav-text">Notificaciones</span>
+                </a>
+
+                <!-- Mobile user actions -->
+                <div class="mobile-user-actions">
+                    <div class="mobile-user-info">
+                        <i class="fas fa-user-circle"></i>
+                        <span>{{ Auth::user()->name }}</span>
+                    </div>
+                    <a href="{{ route('profile.edit') }}" class="mobile-nav-link">
+                        <i class="fas fa-user-cog"></i>Mi perfil
+                    </a>
+                    <form method="POST" action="{{ route('logout') }}" class="mobile-logout-form">
+                        @csrf
+                        <button type="submit" class="mobile-nav-link logout-btn">
+                            <i class="fas fa-sign-out-alt"></i>Cerrar sesión
+                        </button>
+                    </form>
+                </div>
+                @else
+                <!-- Mobile auth actions for guests -->
+                <div class="mobile-auth-actions">
+                    <a href="{{ route('login') }}" class="mobile-nav-link">
+                        <i class="fas fa-sign-in-alt"></i>Iniciar sesión
+                    </a>
+                    <a href="{{ route('register') }}" class="mobile-nav-link">
+                        <i class="fas fa-user-plus"></i>Registrarse
+                    </a>
+                </div>
+                @endauth
+            </div>
+
+            <!-- Desktop User Actions -->
+            <div class="nav-actions desktop-only">
+                @auth
+                    <div class="dropdown">
+                        <button class="btn-user" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-circle"></i>
+                            <span id="username-display">{{ Auth::user()->name }}</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li>
+                                <a class="dropdown-item" href="{{ route('profile.edit') }}">
+                                    <i class="fas fa-user-cog me-2"></i> Perfil
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit" class="dropdown-item" id="logout-btn">
+                                        <i class="fas fa-sign-out-alt me-2"></i> Cerrar sesión
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                @else
+                    <a href="{{ route('login') }}" class="btn-login">
+                        Iniciar sesión
+                    </a>
+                    <a href="{{ route('register') }}" class="btn-register">
+                        Registrarse
+                    </a>
+                @endauth
+            </div>
+        </nav>
+    </div>
 </header>

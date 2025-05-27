@@ -80,14 +80,14 @@
   background-clip: text;
 }
 
-/* Mobile Menu Button - SIEMPRE OCULTO EN DESKTOP */
+/* Mobile Menu Button */
 .mobile-menu-btn {
   display: none;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   background: rgba(255, 255, 255, 0.1);
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-radius: 8px;
@@ -99,8 +99,8 @@
 }
 
 .hamburger-line {
-  width: 20px;
-  height: 2px;
+  width: 24px;
+  height: 3px;
   background-color: white;
   border-radius: 2px;
   transition: var(--transition);
@@ -170,22 +170,6 @@
 
 .nav-link i {
   font-size: 1.1rem;
-}
-
-.notification-badge {
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  background: var(--accent-color);
-  color: white;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  font-size: 0.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
 }
 
 /* User Actions */
@@ -280,7 +264,7 @@
   width: 20px;
 }
 
-/* Mobile Styles - OCULTOS POR DEFECTO */
+/* Mobile Styles */
 .mobile-user-actions,
 .mobile-auth-actions {
   display: none;
@@ -314,7 +298,7 @@
     margin-right: 0.5rem;
   }
 
-  /* MOSTRAR BOTÓN HAMBURGUESA EN MÓVIL */
+  /* MOSTRAR BOTÓN HAMBURGUESA */
   .mobile-menu-btn {
     display: flex !important;
     position: relative !important;
@@ -374,12 +358,6 @@
 
   .nav-text {
     font-size: 1rem;
-  }
-
-  .notification-badge {
-    position: static;
-    margin-left: auto;
-    margin-right: 0.5rem;
   }
 
   /* MOSTRAR ACCIONES MÓVILES */
