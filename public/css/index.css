@@ -11,7 +11,7 @@
   --border-radius: 12px;
   --error-color: #dc3545;
   --success-color: #28a745;
-  --bone-color: #f5f5dc; /* Añadido color blanco hueso */
+  --bone-color: #f5f5dc;
 }
 
 body {
