@@ -3,14 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\Notification;
+use App\Services\TmdbService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class NotificationController extends Controller
 {
-    public function __construct()
+    protected $tmdbService;
+
+    public function __construct(TmdbService $tmdbService)
     {
         $this->middleware('auth');
+        $this->tmdbService = $tmdbService;
     }
 
     public function index()
@@ -53,7 +58,6 @@ class NotificationController extends Controller
         return response()->json(['count' => $count]);
     }
 
-    // Añadir el método para manejar invitaciones de películas
     public function sendMovieInvitation(Request $request)
     {
         try {
@@ -67,33 +71,60 @@ class NotificationController extends Controller
 
             $user = Auth::user();
             
+            // Verificar que el friend_id no sea el mismo que el usuario actual
+            if ($validated['friend_id'] == $user->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No puedes enviarte una invitación a ti mismo'
+                ], 400);
+            }
+
+            // Obtener información de la película una sola vez
+            $moviePoster = null;
+            try {
+                $movieData = $this->tmdbService->getMovie($validated['movie_id']);
+                if (isset($movieData['poster_path']) && $movieData['poster_path']) {
+                    $moviePoster = 'https://image.tmdb.org/t/p/w500' . $movieData['poster_path'];
+                }
+            } catch (\Exception $e) {
+                Log::warning('Error al obtener datos de la película: ' . $e->getMessage());
+                // Continuar sin el poster si hay error
+            }
+            
             // Crear la notificación para el amigo
             $notification = new Notification();
             $notification->user_id = $validated['friend_id'];
             $notification->from_user_id = $user->id;
             $notification->type = 'movie_invitation';
-            $notification->message = $user->name . ' te ha invitado a ver una película';
+            $notification->message = $user->name . ' te ha invitado a ver "' . $validated['movie_title'] . '"';
             $notification->read = false;
-            $notification->data = [
+            $notification->data = json_encode([
                 'movie_id' => $validated['movie_id'],
                 'movie_title' => $validated['movie_title'],
                 'watch_date' => $validated['watch_date'],
                 'message' => $validated['message'] ?? '',
-                // Obtener el poster de la película desde TMDB
-                'movie_poster' => app(App\Services\TmdbService::class)->getMovie($validated['movie_id'])['poster_path'] 
-                    ? 'https://image.tmdb.org/t/p/w500' . app(App\Services\TmdbService::class)->getMovie($validated['movie_id'])['poster_path'] 
-                    : null,
-            ];
+                'movie_poster' => $moviePoster,
+            ]);
             $notification->save();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Invitación enviada correctamente'
+                'message' => 'Invitación enviada correctamente a ' . \App\Models\User::find($validated['friend_id'])->name
             ]);
-        } catch (\Exception $e) {
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al enviar la invitación: ' . $e->getMessage()
+                'message' => 'Datos de validación incorrectos',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Error al enviar invitación de película: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Error interno del servidor. Por favor, inténtalo de nuevo.'
             ], 500);
         }
     }
