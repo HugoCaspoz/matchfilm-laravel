@@ -21,7 +21,6 @@
   left: 0;
   right: 0;
   z-index: 1000;
-  height: var(--header-height);
   transition: var(--transition);
 }
 
