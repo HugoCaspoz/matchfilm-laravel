@@ -45,12 +45,6 @@
                     @endif
                 </a>
 
-                <a href="{{ route('profile.show') }}" class="nav-link {{ request()->routeIs('profile.show') ? 'active' : '' }}" title="Mi perfil">
-                    <i class="fas fa-user"></i>
-                    <span class="nav-text">Perfil</span>
-                </a>
-                @endauth
-
                 <!-- Mobile user actions -->
                 <div class="mobile-user-actions">
                     <div class="mobile-user-info">
@@ -70,9 +64,21 @@
                         </button>
                     </form>
                 </div>
+                @else
+                <!-- Mobile auth actions for guests -->
+                <div class="mobile-auth-actions">
+                    <a href="{{ route('login') }}" class="mobile-nav-link">
+                        <i class="fas fa-sign-in-alt"></i>Iniciar sesión
+                    </a>
+                    <a href="{{ route('register') }}" class="mobile-nav-link">
+                        <i class="fas fa-user-plus"></i>Registrarse
+                    </a>
+                </div>
+                @endauth
             </div>
 
             <div class="nav-actions desktop-only">
+                @auth
                 <div class="dropdown">
                     <button class="btn-user dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fas fa-user-circle"></i>
@@ -92,6 +98,10 @@
                         </li>
                     </ul>
                 </div>
+                @else
+                <a href="{{ route('login') }}" class="btn-login">Iniciar sesión</a>
+                <a href="{{ route('register') }}" class="btn-register">Registrarse</a>
+                @endauth
             </div>
         </nav>
     </div>
