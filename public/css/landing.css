@@ -123,14 +123,15 @@ body {
 .hero-section {
   background: var(--gradient-dark);
   color: white;
-  padding: 160px 0 100px;
+  padding: 160px 0 150px; /* Aumentar padding inferior para dar más espacio */
   position: relative;
   overflow: hidden;
 }
 
 .hero-text {
   position: relative;
-  z-index: 10; /* Asegurar que el contenido esté por encima del wave */
+  z-index: 10;
+  margin-bottom: 3rem; /* Agregar margen inferior para separar del wave */
 }
 
 .hero-text h1 {
@@ -141,12 +142,13 @@ body {
 .hero-text p {
   font-size: 1.2rem;
   opacity: 0.9;
+  margin-bottom: 2rem; /* Agregar margen inferior al párrafo */
 }
 
 .hero-buttons {
   position: relative;
-  z-index: 10; /* Asegurar que los botones estén por encima del wave */
-  margin-bottom: 2rem; /* Agregar margen inferior para separar del wave */
+  z-index: 10;
+  margin-bottom: 4rem; /* Aumentar margen inferior para separar del wave */
 }
 
 .hero-buttons .btn {
@@ -155,12 +157,15 @@ body {
   font-weight: 600;
   transition: var(--transition);
   position: relative;
-  z-index: 11; /* Z-index más alto para los botones individuales */
+  z-index: 11;
+  margin-right: 1rem;
+  margin-bottom: 1rem; /* Agregar margen inferior para responsive */
 }
 
 .hero-buttons .btn-primary {
   background: var(--gradient-primary);
   border: none;
+  color: white;
 }
 
 .hero-buttons .btn-primary:hover {
@@ -168,8 +173,17 @@ body {
   box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
 }
 
+.hero-buttons .btn-outline-light {
+  border: 2px solid white;
+  color: white;
+  background-color: transparent;
+}
+
 .hero-buttons .btn-outline-light:hover {
   transform: translateY(-3px);
+  background-color: white;
+  color: var(--dark-color);
+  border-color: white;
 }
 
 .hero-image {
@@ -196,7 +210,7 @@ body {
   left: 0;
   width: 100%;
   line-height: 0;
-  z-index: 1; /* Z-index bajo para que esté detrás del contenido */
+  z-index: 1;
 }
 
 /* How it Works Section */
@@ -485,7 +499,7 @@ body {
 /* Responsive */
 @media (max-width: 991.98px) {
   .hero-section {
-    padding: 120px 0 80px;
+    padding: 120px 0 100px; /* Ajustar padding para tablet */
     text-align: center;
   }
 
@@ -512,11 +526,19 @@ body {
 
 @media (max-width: 767.98px) {
   .hero-section {
-    padding: 100px 0 60px;
+    padding: 100px 0 80px; /* Ajustar padding para móvil */
   }
 
   .hero-text h1 {
     font-size: 2.5rem;
+  }
+
+  .hero-text {
+    margin-bottom: 2rem;
+  }
+
+  .hero-buttons {
+    margin-bottom: 3rem;
   }
 
   .section-header h2 {
@@ -541,6 +563,7 @@ body {
     display: block;
     width: 100%;
     margin-bottom: 15px;
+    margin-right: 0;
   }
 
   .hero-buttons .btn-outline-light {
