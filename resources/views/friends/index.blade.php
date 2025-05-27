@@ -123,65 +123,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- <div class="col-md-6 mb-4">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h3 class="card-title mb-4">Notificaciones</h3>
-                        <div id="notificaciones">
-                            @if(!isset($notifications) || $notifications->isEmpty())
-                                <p class="text-white-50 text-center">No tienes notificaciones</p>
-                            @else
-                                @foreach($notifications as $notification)
-                                    <div class="card mb-3 notification-card" style="background-color: rgba(255, 255, 255, 0.1);">
-                                        <div class="card-body">
-                                            <h5 class="card-title">
-                                                <b>
-                                                    @if($notification->type == 'friend_request')
-                                                        <i class="fas fa-user-plus me-2 text-primary"></i>
-                                                    @elseif($notification->type == 'friend_accepted')
-                                                        <i class="fas fa-user-check me-2 text-success"></i>
-                                                    @else
-                                                        <i class="fas fa-bell me-2 text-info"></i>
-                                                    @endif
-                                                    {{ $notification->fromUser->username ?? $notification->fromUser->name ?? 'Usuario' }}
-                                                </b>
-                                            </h5>
-                                            <p class="card-text">{{ $notification->message }}</p>
-                                            <p class="card-text">
-                                                <small class="text-muted">{{ $notification->created_at->diffForHumans() }}</small>
-                                            </p>
-
-                                            @if($notification->type == 'friend_request')
-                                                @php
-                                                    $data = json_decode($notification->data, true);
-                                                    $friendshipId = $data['friendship_id'] ?? null;
-                                                @endphp
-                                                @if($friendshipId)
-                                                    <div class="d-flex mt-3">
-                                                        <form action="{{ route('friends.accept', $friendshipId) }}" method="POST" class="me-2">
-                                                            @csrf
-                                                            <button type="submit" class="btn btn-success btn-sm">Aceptar</button>
-                                                        </form>
-                                                        <form action="{{ route('friends.reject', $friendshipId) }}" method="POST">
-                                                            @csrf
-                                                            <button type="submit" class="btn btn-danger btn-sm">Rechazar</button>
-                                                        </form>
-                                                    </div>
-                                                @endif
-                                            @else
-                                                <button type="button" class="btn btn-sm mark-as-read" style="background-color: #e50914; color: white;" data-notification-id="{{ $notification->id }}">
-                                                    <i class="fas fa-check me-1"></i>Marcar como leída
-                                                </button>
-                                            @endif
-                                        </div>
-                                    </div>
-                                @endforeach
-                            @endif
-                        </div>
-                    </div>
-                </div>
-            </div> -->
         </div>
     </div>
 
