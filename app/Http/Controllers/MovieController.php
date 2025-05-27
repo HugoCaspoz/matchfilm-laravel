@@ -19,8 +19,7 @@ class MovieController extends Controller
     public function __construct(TmdbService $tmdbService)
     {
         $this->tmdbService = $tmdbService;
-        // Quitar las excepciones del middleware auth para que todas las rutas requieran autenticación
-        $this->middleware('auth');
+        $this->middleware('auth')->except(['index', 'show', 'search', 'byGenre']);
     }
 
     public function index(Request $request)
@@ -33,73 +32,18 @@ class MovieController extends Controller
                 'page' => $page
             ]);
 
-            // Obtener películas desde TMDB
-            $moviesData = $this->tmdbService->getPopularMovies($page);
-            
-            // Verificar que tenemos datos válidos
-            if (!$moviesData || !isset($moviesData['results'])) {
-                Log::error('No se recibieron datos válidos de TMDB', [
-                    'moviesData' => $moviesData
-                ]);
-                
-                // Datos de fallback
-                $movies = $this->getFallbackMovies();
-            } else {
-                $movies = $moviesData['results'];
-                
-                Log::info('Películas obtenidas de TMDB', [
-                    'count' => count($movies),
-                    'page' => $moviesData['page'] ?? $page
-                ]);
-            }
-
-            // Filtrar películas que el usuario ya ha valorado
+            // Si el usuario está autenticado, usar estrategia inteligente
             if (Auth::check()) {
-                $userId = Auth::id();
-
-                // Obtener IDs de películas que el usuario ya ha valorado
-                $ratedMovieIds = MovieLike::where('user_id', $userId)
-                    ->pluck('tmdb_id')
-                    ->toArray();
-
-                Log::info('Películas ya valoradas por el usuario', [
-                    'user_id' => $userId,
-                    'rated_count' => count($ratedMovieIds)
-                ]);
-
-                // Filtrar las películas para excluir las que ya han sido valoradas
-                $movies = array_filter($movies, function($movie) use ($ratedMovieIds) {
-                    return !in_array($movie['id'], $ratedMovieIds);
-                });
-
-                // Si después de filtrar quedan muy pocas películas, cargar más páginas
-                if (count($movies) < 5 && $page < 5) {
-                    $additionalPage = $page + 1;
-                    $additionalMoviesData = $this->tmdbService->getPopularMovies($additionalPage);
-                    
-                    if ($additionalMoviesData && isset($additionalMoviesData['results'])) {
-                        $additionalMovies = $additionalMoviesData['results'];
-
-                        // Filtrar también las películas adicionales
-                        $additionalMovies = array_filter($additionalMovies, function($movie) use ($ratedMovieIds) {
-                            return !in_array($movie['id'], $ratedMovieIds);
-                        });
-
-                        // Combinar con las películas existentes
-                        $movies = array_merge($movies, $additionalMovies);
-                    }
-
-                    // Limitar a 20 películas para no sobrecargar
-                    $movies = array_slice($movies, 0, 20);
-                }
-
-                // Reindexar el array para evitar problemas con índices no secuenciales
-                $movies = array_values($movies);
+                $movies = $this->getMoviesWithIntelligentStrategy($page);
+            } else {
+                // Si no está autenticado, obtener películas normalmente
+                $moviesData = $this->tmdbService->getPopularMovies($page);
+                $movies = $moviesData['results'] ?? [];
             }
 
-            Log::info('Películas finales para mostrar', [
+            Log::info('Películas finales obtenidas', [
                 'count' => count($movies),
-                'first_movie' => $movies[0]['title'] ?? 'ninguna'
+                'page' => $page
             ]);
 
             return view('movies.index', compact('movies'));
@@ -114,6 +58,93 @@ class MovieController extends Controller
             $movies = $this->getFallbackMovies();
             return view('movies.index', compact('movies'));
         }
+    }
+
+    private function getMoviesWithIntelligentStrategy($startPage)
+    {
+        $userId = Auth::id();
+        $targetMovieCount = 20; // Objetivo: tener al menos 20 películas
+        $maxPagesToFetch = 10; // Máximo 10 páginas para evitar demasiadas consultas
+        
+        // Obtener IDs de películas que el usuario ya ha valorado
+        $ratedMovieIds = MovieLike::where('user_id', $userId)
+            ->pluck('tmdb_id')
+            ->toArray();
+
+        Log::info('Películas ya valoradas por el usuario', [
+            'user_id' => $userId,
+            'rated_count' => count($ratedMovieIds)
+        ]);
+
+        $allMovies = [];
+        $currentPage = $startPage;
+        $pagesFetched = 0;
+
+        // Obtener películas de múltiples páginas hasta tener suficientes
+        while (count($allMovies) < $targetMovieCount && $pagesFetched < $maxPagesToFetch) {
+            try {
+                Log::info("Obteniendo página {$currentPage} de películas populares");
+                
+                $moviesData = $this->tmdbService->getPopularMovies($currentPage);
+                
+                if (!$moviesData || !isset($moviesData['results'])) {
+                    Log::warning("No se obtuvieron datos válidos de la página {$currentPage}");
+                    break;
+                }
+
+                $pageMovies = $moviesData['results'];
+                
+                // Filtrar películas que el usuario ya ha valorado
+                $filteredMovies = array_filter($pageMovies, function($movie) use ($ratedMovieIds) {
+                    return !in_array($movie['id'], $ratedMovieIds);
+                });
+
+                Log::info("Página {$currentPage} procesada", [
+                    'total_movies' => count($pageMovies),
+                    'filtered_movies' => count($filteredMovies),
+                    'accumulated_movies' => count($allMovies)
+                ]);
+
+                // Agregar las películas filtradas al array principal
+                $allMovies = array_merge($allMovies, $filteredMovies);
+
+                // Incrementar contadores
+                $currentPage++;
+                $pagesFetched++;
+
+                // Si la página no tenía resultados, salir del bucle
+                if (empty($pageMovies)) {
+                    Log::info("Página {$currentPage} sin resultados, terminando búsqueda");
+                    break;
+                }
+
+            } catch (\Exception $e) {
+                Log::error("Error al obtener página {$currentPage}: " . $e->getMessage());
+                break;
+            }
+        }
+
+        // Eliminar duplicados basándose en el ID (por si acaso)
+        $uniqueMovies = [];
+        $seenIds = [];
+        
+        foreach ($allMovies as $movie) {
+            if (!in_array($movie['id'], $seenIds)) {
+                $uniqueMovies[] = $movie;
+                $seenIds[] = $movie['id'];
+            }
+        }
+
+        // Reindexar el array para evitar problemas con índices no secuenciales
+        $finalMovies = array_values($uniqueMovies);
+
+        Log::info('Estrategia inteligente completada', [
+            'pages_fetched' => $pagesFetched,
+            'total_movies_found' => count($finalMovies),
+            'target_was' => $targetMovieCount
+        ]);
+
+        return $finalMovies;
     }
 
     private function getFallbackMovies()
@@ -325,7 +356,7 @@ class MovieController extends Controller
                     'status' => 'pending'
                 ]);
 
-                // Crear notificación para el amigo
+                // Crear notificación para el amigo - usar array directamente
                 Notification::create([
                     'user_id' => $friendId,
                     'from_user_id' => $userId,
